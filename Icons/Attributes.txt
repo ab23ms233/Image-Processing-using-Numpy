@@ -1,0 +1,5 @@
+Flip Horizontal - <a href="https://www.flaticon.com/free-icons/mirror" title="mirror icons">Mirror icons created by Creatype - Flaticon</a>
+Flip Vertical - <a href="https://www.flaticon.com/free-icons/editor" title="editor icons">Editor icons created by Xinh Studio - Flaticon</a>
+Crop - <a href="https://www.flaticon.com/free-icons/crop" title="crop icons">Crop icons created by joalfa - Flaticon</a>
+Rotate - <a href="https://www.flaticon.com/free-icons/rotate" title="rotate icons">Rotate icons created by Freepik - Flaticon</a>
+Negative - <a href="https://www.flaticon.com/free-icons/pros-and-cons" title="pros and cons icons">Pros and cons icons created by Freepik - Flaticon</a>

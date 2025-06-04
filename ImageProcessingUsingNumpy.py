@@ -135,14 +135,14 @@ class ImageProcessing:
                 image_arr, text = args[i]
 
             else:
-                if args[i].ndim not in [2, 3]:
+                if args[i].ndim not in [2, 3]:  #type: ignore
                     raise ValueError("The image_array must be a 2D or 3D array representing an image")
                 
                 image_arr = args[i]
                 text = ''
 
             plt.subplot(rows,2,i+1)
-            ImageProcessing.display_img(image_arr, text)
+            ImageProcessing.display_img(image_arr, text)    #type: ignore
 
         plt.tight_layout()
         plt.show()
@@ -240,7 +240,7 @@ class ImageProcessing:
         Returns:
             bool: True if the image is RGB (3D array with 3 channels), False otherwise.
         """
-        if self.ndim < 3:
+        if self.ndim < 3:   #type: ignore
             return False
         else:
             return True
@@ -336,10 +336,11 @@ class ImageProcessing:
         padrows, padcols = krows//2, kcols//2
         output = np.zeros_like(image_array)
         padded_img = np.pad(image_array, ((padrows, padrows), (padcols, padcols)), 'constant', constant_values=0)
+
         for row in range(rows):
             for col in range(columns):
                 region = padded_img[row:row+krows, col:col+kcols]
-                output[row, col] = np.clip(np.sum(region*kernel), 0, 255)
+                output[row, col] = np.sum(region*kernel)
         return output
 
     @staticmethod
@@ -404,6 +405,7 @@ class ImageProcessing:
             raise ValueError("kernel must be a 2D array representing the convolution kernel")
         
         self.arr = ImageProcessing.convolve3d(self.arr, kernel).astype(np.uint8)
+        self.arr = np.clip(self.arr, 0, 255)
         return self.arr
     
     def sharpen_img(self, kernel: ndarray = np.array([[0, -1, 0], [-1, 5, -1], [0, -1, 0]])) -> ndarray:
@@ -426,4 +428,13 @@ class ImageProcessing:
             raise ValueError("kernel must be a 2D array representing the convolution kernel")
         
         self.arr = ImageProcessing.convolve3d(self.arr, kernel).astype(np.uint8)
+        self.arr = np.clip(self.arr, 0, 255)
         return self.arr
+
+    def edge_detection(self, kernel: ndarray) -> ndarray:
+        """
+        Applies an edge detection filter to the image using a specified kernel.
+
+        Parameters:
+            
+        """
