@@ -32,6 +32,25 @@ class ImageProcessing:
         TypeError: If the image_array is not a NumPy ndarray.
         ValueError: If the image_array does not have the correct dimensions (2D or 3D).
     """
+    sharpen_kernel = np.array([[0, -1, 0], 
+                               [-1, 5, -1], 
+                               [0, -1, 0]])
+    
+    blur_kernel = np.array([[1, 2, 1],      #Gaussian Blur
+                            [2, 4, 2], 
+                            [1, 2, 1]])/16
+    
+    #Edge Detection Kernels
+    sobel_x = np.array([[-1, 0, 1],
+                        [-2, 0, 2],
+                        [-1, 0, 1]])
+
+    sobel_y = np.array([[-1, -2, -1],
+                        [ 0,  0,  0],
+                        [ 1,  2,  1]])
+
+    # Grayscale conversion formula: Y = 0.299*R + 0.587*G + 0.114*B
+    gray_convert_arr = np.array((0.299, 0.587, 0.114))
 
     def __init__(self, image_array: ndarray):
         """
@@ -266,10 +285,7 @@ class ImageProcessing:
             # If the image is already grayscale, return it as is
             return self.arr
     
-        # Grayscale conversion formula: Y = 0.299*R + 0.587*G + 0.114*B
-        gray_convert_arr = np.array((0.299, 0.587, 0.114))
-        self.arr = np.dot(self.arr, gray_convert_arr).astype(np.uint8)
-
+        self.arr = np.dot(self.arr, ImageProcessing.gray_convert_arr).astype(np.uint8)
         return self.arr
     
     def binarise(self, threshold: int = 128) -> ndarray:
@@ -335,7 +351,7 @@ class ImageProcessing:
 
         padrows, padcols = krows//2, kcols//2
         output = np.zeros_like(image_array)
-        padded_img = np.pad(image_array, ((padrows, padrows), (padcols, padcols)), 'constant', constant_values=0)
+        padded_img = np.pad(image_array, ((padrows, padrows), (padcols, padcols)), 'reflect')
 
         for row in range(rows):
             for col in range(columns):
@@ -385,7 +401,7 @@ class ImageProcessing:
 
             return output
         
-    def blur_img(self, kernel: ndarray = np.array([[1, 2, 1], [2, 4, 2], [1, 2, 1]])/16) -> ndarray:
+    def blur_img(self, kernel: ndarray = blur_kernel) -> ndarray:
         """
         Applies a blur to the image using a specified kernel.
 
@@ -408,7 +424,7 @@ class ImageProcessing:
         self.arr = np.clip(self.arr, 0, 255)
         return self.arr
     
-    def sharpen_img(self, kernel: ndarray = np.array([[0, -1, 0], [-1, 5, -1], [0, -1, 0]])) -> ndarray:
+    def sharpen_img(self, kernel: ndarray = sharpen_kernel) -> ndarray:
         """
         Applies a sharpening filter to the image using a specified kernel.
     
@@ -431,10 +447,122 @@ class ImageProcessing:
         self.arr = np.clip(self.arr, 0, 255)
         return self.arr
 
-    def edge_detection(self, kernel: ndarray) -> ndarray:
+    @staticmethod
+    def edge_detection(image_array: ndarray, kernel_x: ndarray = sobel_x, kernel_y: ndarray = sobel_y) -> ndarray:
         """
-        Applies an edge detection filter to the image using a specified kernel.
+        Applies edge detection to the image array using specified kernels.
 
         Parameters:
-            
+            image_array (ndarray): The image array on which edge detection is to be performed, expected as a 2D/3D Numpy array
+            kernel_x (ndarray, optional): The kernel for detecting edges in the x direction. Default is the Sobel x kernel.
+            kernel_y (ndarray, optional): The kernel for detecting edges in the y direction. Default is the Sobel y kernel.
+            If you want to use only 1 kernel, then pass the same kernel for both kernel_x and kernel_y
+        
+        Returns:
+            ndarray: The edge-detected image array.
+
+        Raises:
+            TypeError: If the kernel_x or kernel_y is not a Numpy ndarray.
+            TypeError: If the image_array is not a Numpy ndarray.
+            ValueError: If the kernel_x or kernel_y is not a 2D array.
+            ValueError: If the image_array is not a 2D/3D array.
         """
+        if not isinstance(kernel_x, ndarray):
+            raise TypeError("kernel_x must be a NumPy ndarray")
+        if not isinstance(kernel_y, ndarray):
+            raise TypeError("kernel_y must be a NumPy ndarray")
+        if kernel_x.ndim != 2:
+            raise ValueError("kernel_x must be a 2D array representing the convolution kernel")
+        if kernel_y.ndim != 2:
+            raise ValueError("kernel_y must be a 2D array representing the convolution kernel")
+        if not isinstance(image_array, ndarray):
+            raise TypeError("image_array must be a NumPy ndarray")
+        if image_array.ndim not in [2, 3]:
+            raise ValueError("image_array must be a 2D or 3D array representing an image")
+        
+        if image_array.ndim == 3:
+            # If the image is in RGB format, convert it to grayscale first
+            image_array = np.dot(image_array, ImageProcessing.gray_convert_arr).astype(np.uint8)
+
+        edge_x = np.abs(ImageProcessing.convolve3d(image_array, kernel_x))
+        edge_y = np.abs(ImageProcessing.convolve3d(image_array, kernel_y))
+
+        #Normalisation
+        x_max, x_min = edge_x.max(), edge_x.min()
+        y_max, y_min = edge_y.max(), edge_y.min()
+        den_x = x_max - x_min
+        den_y = y_max - y_min
+
+        if den_x != 0:  
+            edge_x = 255*(edge_x - x_min)/den_x
+        if den_y != 0:
+            edge_y = 255*(edge_y - y_min)/den_y
+
+        edges = np.hypot(edge_x, edge_y).astype(np.uint8)    #Combining the edges in the x and y directions
+        return edges
+    
+    def generate_image(total_px: int = 200, divisions: int = 4, merge: int = 3, channels: int = 3, direction: Literal['h', 'v'] = 'v') -> ndarray:
+        """
+        Generates a random square striped image with specified divisions and merging sections.
+
+        Parameters:
+            total_px (int, optional): The total number of pixels in the image (width and height). Default is 200.
+            divisions (int, optional): The number of divisions in the image. Default is 4.
+            merge (int, optional): The magnitude of pixels to merge between divisions. Default is 3.
+            channels (int, optional): The number of color channels in the image. Default is 3 (RGB).
+            direction (str, optional): The direction of the stripes. 'h' for horizontal, 'v' for vertical. Default is 'v'.
+        
+        Returns:
+            ndarray: The generated image array
+        
+        Raises:
+            TypeError: If total_px, divisions, merge, or channels are not integers.
+            ValueError: If total_px, channels, divisions, or merge are not positive integers.
+            ValueError: If channels is not between 1 and 4.
+            ValueError: If direction is not 'h' or 'v'.
+        """
+        parameters = (total_px, divisions, merge, channels)
+
+        if not any(isinstance(parameter, int) for parameter in parameters) or any(parameter < 0 for parameter in parameters):
+            raise TypeError("All the parameters must be positive integers")
+        if channels < 1 or channels > 4:
+            raise ValueError("channels must be between 1 and 4")
+        if direction not in ['h', 'v']:
+            raise ValueError("direction must be either 'h' (horizontal) or 'v' (vertical)")
+        
+        px_per_merging = merge*divisions    #px_per_merging must be a multiple of divisions according to calculations
+        px_per_division = int((total_px + px_per_merging*(1-divisions))/divisions)  #According to calculations
+        px_per_section = px_per_division + px_per_merging   #A section is merging + division
+        image = np.zeros(shape=(total_px, total_px, channels))  #Zero image array of required shape
+
+        for i in range(channels):
+            section = np.random.randint(0, 255, size=(divisions,)).astype(np.uint8) #The colours for the divisions
+
+            for j in range(divisions):
+                px = section[j]     #Colour for the division
+                start = j*px_per_section    #Starting row/column of the entire image
+                stop = start+px_per_division    #Ending row/column of the entire image
+                division_unit = np.repeat(px, px_per_division)   #1 row/column of the division
+
+                if direction == 'v':    
+                    division_img = np.stack([division_unit]*total_px)    #Image of the division is obtained by stacking the division_unit column no. of times
+                    image[:,start:stop,i] = division_img    #1 division of the entire image is made
+                else:
+                    division_img = np.stack([division_unit]*total_px, axis=1)    #Image of the division is obtained by stacking the division_unit row no. of times
+                    image[start:stop,:,i] = division_img
+
+                if j != divisions-1:    #merging is not done for the last division
+                    start = stop    #Start row of merging
+                    stop = start+px_per_merging     #Stop row of merging
+                    merge = np.linspace(px, section[j+1], px_per_merging)   #Creating 1 row/column for merging; pixels gradually change from one color to the other
+
+                    if direction == 'v':
+                        merge_img = np.stack([merge]*total_px)  #Image for merging
+                        image[:, start:stop, i] = merge_img     #Merging for previous division
+                    else:
+                        merge_img = np.stack([merge]*total_px, axis=1)  #Image for merging
+                        image[start:stop, :, i] = merge_img     #Merging for previous division
+
+        image = image.astype(np.uint8)
+        return image
+    
