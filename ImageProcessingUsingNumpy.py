@@ -501,6 +501,7 @@ class ImageProcessing:
         edges = np.hypot(edge_x, edge_y).astype(np.uint8)    #Combining the edges in the x and y directions
         return edges
     
+    @staticmethod
     def generate_image(total_px: int = 200, divisions: int = 4, merge: int = 3, channels: int = 3, direction: Literal['h', 'v'] = 'v') -> ndarray:
         """
         Generates a random square striped image with specified divisions and merging sections.
@@ -509,7 +510,7 @@ class ImageProcessing:
             total_px (int, optional): The total number of pixels in the image (width and height). Default is 200.
             divisions (int, optional): The number of divisions in the image. Default is 4.
             merge (int, optional): The magnitude of pixels to merge between divisions. Default is 3.
-            channels (int, optional): The number of color channels in the image. Default is 3 (RGB).
+            channels (int, optional): The number of color channels in the image. Default is 3 (RGB). Must be one of 1, 3, 4
             direction (str, optional): The direction of the stripes. 'h' for horizontal, 'v' for vertical. Default is 'v'.
         
         Returns:
@@ -525,8 +526,8 @@ class ImageProcessing:
 
         if not any(isinstance(parameter, int) for parameter in parameters) or any(parameter < 0 for parameter in parameters):
             raise TypeError("All the parameters must be positive integers")
-        if channels < 1 or channels > 4:
-            raise ValueError("channels must be between 1 and 4")
+        if channels not in [1,3,4]:
+            raise ValueError("channels must be one of 1,3,4")
         if direction not in ['h', 'v']:
             raise ValueError("direction must be either 'h' (horizontal) or 'v' (vertical)")
         
