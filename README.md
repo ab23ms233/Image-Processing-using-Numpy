@@ -88,7 +88,7 @@ jupyter notebook ImageProcessing_Demo.ipynb
 
 ## 📚 License
 
-This project is open-source and free to use. License details can be added here if applicable.
+This project is open-source and free to use.
 
 ---
 
