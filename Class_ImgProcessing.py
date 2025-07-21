@@ -3,36 +3,56 @@ from numpy import ndarray
 import matplotlib.pyplot as plt
 from typing import Union, Tuple, Literal
 from scipy.ndimage import convolve
+from colorama import Fore, init
 
 # ImageProcessing class for image manipulation and processing
 class ImageProcessing:
-    """A class for processing images using NumPy arrays.
+    """
+    A class for processing images using NumPy arrays.
     This class provides methods for displaying, cropping, rotating, flipping, converting to grayscale,
     binarizing, convolving, blurring, and sharpening images.
     
-    Attributes:
-        arr (ndarray): The image data as a NumPy array.
+    Class Attributes:
+    --------------------
+    sharpen_kernel: ndarray
+        A kernel used for sharpening images.
+    blur_kernel: ndarray
+        A kernel used for blurring images.
+    sobel_x: ndarray
+        A kernel used for edge detection in the x direction.
+    sobel_y: ndarray
+        A kernel used for edge detection in the y direction.
+    gray_convert_arr: ndarray
+        An array used for converting RGB images to grayscale using the standard luminance formula.
+
+    Instance Attributes:
+    ----------------------
+    arr: ndarray
+        The image data as a NumPy array.
     
     Methods:
-        image(): Displays the image stored in the instance.
-        display_img(image_array, text='', position='center'): Displays an image with an optional text label.
-        compare_img(*args): Compares multiple images side by side.
-        crop_img(coordinate_2, coordinate_1=(0,0)): Crops the image according to the provided coordinates.
-        rotate_img(num=1): Rotates the image by 90 degrees clockwise or counterclockwise.
-        flip_img(plane='h'): Flips the image horizontally or vertically.
-        is_rgb(): Checks if the image is in RGB format.
-        negative(): Converts the image to its negative.
-        grayscale(): Converts the image to grayscale.
-        binarise(threshold=128): Converts the image to binary using a specified threshold.
-        convolve2d(image_array, kernel): Applies a 2D convolution to an image array using a specified kernel.
-        convolve3d(image_array, kernel): Applies a 3D convolution to an image array using a specified kernel.
-        blur_img(kernel): Applies a blur to the image using a specified kernel.
-        sharpen_img(kernel): Applies a sharpening filter to the image using a specified kernel.
+    ------------------------------
+    - `image():` Displays the image stored in the instance.
+    - `display_img(image_array, text='', position='center'):` Displays an image with an optional text label.
+    - `compare_img(*args):` Compares multiple images side by side.
+    - `crop_img(coordinate_2, coordinate_1=(0,0)):` Crops the image according to the provided coordinates.
+    - `rotate_img(num=1):` Rotates the image by 90 degrees clockwise or counterclockwise.
+    - `flip_img(plane='h'):` Flips the image horizontally or vertically.
+    - `is_rgb():` Checks if the image is in RGB format.
+    - `negative():` Converts the image to its negative.
+    - `grayscale():` Converts the image to grayscale.
+    - `binarise(threshold=128):` Converts the image to binary using a specified threshold.
+    - `convolve2d(image_array, kernel):` Applies a 2D convolution to an image array using a specified kernel.
+    - `convolve3d(image_array, kernel):` Applies a 3D convolution to an image array using a specified kernel.
+    - `blur_img(kernel):` Applies a blur to the image using a specified kernel.
+    - `sharpen_img(kernel):` Applies a sharpening filter to the image using a specified kernel.
     
     Raises:
         TypeError: If the image_array is not a NumPy ndarray.
         ValueError: If the image_array does not have the correct dimensions (2D or 3D).
     """
+    init(autoreset=True)
+
     sharpen_kernel = np.array([[0, -1, 0], 
                                [-1, 5, -1], 
                                [0, -1, 0]])
@@ -65,9 +85,9 @@ class ImageProcessing:
             ValueError: If image_array does not have the correct dimensions (2D or 3D).
         """
         if not isinstance(image_array, ndarray):
-            raise TypeError("image_array must be a NumPy ndarray")
+            raise TypeError(Fore.RED + "image_array must be a NumPy ndarray")
         if image_array.ndim not in [2, 3]:
-            raise ValueError("image_array must be a 2D or 3D array representing an image")
+            raise ValueError(Fore.RED + "image_array must be a 2D or 3D array representing an image")
         
         self.arr = image_array
     
@@ -91,8 +111,8 @@ class ImageProcessing:
         Parameters:
             image_array (ndarray): The image data to be displayed, expected as a NumPy array.
             text (str, optional): Text to display with the image. Default is an empty string - no text.
-            postion (str, optional): Position of the text. Default is 'center'. 
-            Must be one of 'center', 'left', or 'right'.
+            postion (Literal['center', 'left', 'right'], optional): Position of the text. Default is 'center'. 
+                Must be one of 'center', 'left', or 'right'.
         
         Returns:
             None
@@ -103,14 +123,14 @@ class ImageProcessing:
             TypeError: If image_array is not a NumPy ndarray.
         """
         if not isinstance(image_array, ndarray):
-            raise TypeError("image_array must be a NumPy ndarray")
+            raise TypeError(Fore.RED + "image_array must be a NumPy ndarray")
         if image_array.ndim not in [2, 3]:
-            raise ValueError("image_array must be a 2D or 3D array representing an image")
+            raise ValueError(Fore.RED + "image_array must be a 2D or 3D array representing an image")
         if image_array.shape == 4:
             # If the image has an alpha channel, remove it
             image_array = image_array[:, :, :3]
         if position not in ['center', 'left', 'right']:
-            raise ValueError("position must be one of 'center', 'left', or 'right'")
+            raise ValueError(Fore.RED + "position must be one of 'center', 'left', or 'right'")
 
         plt.imshow(image_array, cmap='gray')
 
@@ -138,7 +158,7 @@ class ImageProcessing:
             TypeError: If any of the arguments are not a NumPy ndarray or a tuple containing a NumPy ndarray and a string.
         """
         if not all(isinstance(arg, (ndarray, tuple)) for arg in args):
-            raise TypeError("All arguments must be either a NumPy ndarray or a tuple containing a NumPy ndarray and a string")
+            raise TypeError(Fore.RED + "All arguments must be either a NumPy ndarray or a tuple containing a NumPy ndarray and a string")
         
         num = len(args)
         plt.figure(figsize=(10,5*num))  # Adjust the figure height based on the number of images. Wdth is 10.
@@ -147,18 +167,18 @@ class ImageProcessing:
         for i in range(num):
             if isinstance(args[i], tuple):
                 if len(args[i]) != 2:
-                    raise TypeError("If a tuple is provided, it must contain exactly two elements: (image_array, text)")
+                    raise TypeError(Fore.RED + "If a tuple is provided, it must contain exactly two elements: (image_array, text)")
                 elif not isinstance(args[i][0], ndarray) or not isinstance(args[i][1], str):
-                    raise TypeError("If a tuple is provided, the first element must be a NumPy ndarray and the second element must be a string")
+                    raise TypeError(Fore.RED + "If a tuple is provided, the first element must be a NumPy ndarray and the second element must be a string")
                 elif args[i][0].ndim not in [2, 3]:
-                    raise ValueError("The image_array in the tuple must be a 2D or 3D array representing an image")
+                    raise ValueError(Fore.RED + "The image_array in the tuple must be a 2D or 3D array representing an image")
                 
                 # Unpack the tuple into image array and text
                 image_arr, text = args[i]
 
             else:
                 if args[i].ndim not in [2, 3]:  #type: ignore
-                    raise ValueError("The image_array must be a 2D or 3D array representing an image")
+                    raise ValueError(Fore.RED + "The image_array must be a 2D or 3D array representing an image")
                 
                 image_arr = args[i]
                 text = ''
@@ -187,19 +207,19 @@ class ImageProcessing:
             ValueError: If coordinate_1 or coordinate_2 are out of bounds of the image dimensions.
         """
         if not isinstance(coordinate_1, tuple) or not isinstance(coordinate_2, tuple):
-            raise TypeError("coordinate_1 and coordinate_2 must be tuples of 2 integers")
+            raise TypeError(Fore.RED + "coordinate_1 and coordinate_2 must be tuples of 2 integers")
         
         if len(coordinate_1) != 2 or len(coordinate_2) != 2:
-            raise TypeError("coordinate_1 and coordinate_2 must be tuples of 2 integers")
+            raise TypeError(Fore.RED + "coordinate_1 and coordinate_2 must be tuples of 2 integers")
         
         if not all(isinstance(coord, int) for coord in coordinate_1 + coordinate_2):
-            raise TypeError("coordinate_1 and coordinate_2 must be tuples of 2 integers")
+            raise TypeError(Fore.RED + "coordinate_1 and coordinate_2 must be tuples of 2 integers")
         
         if coordinate_1[0] >= coordinate_2[0] or coordinate_1[1] >= coordinate_2[1]:
             coordinate_1, coordinate_2 = coordinate_2, coordinate_1  # Ensure coordinate_1 is top-left and coordinate_2 is bottom-right
         
         if coordinate_1[0] < 0 or coordinate_1[1] < 0 or coordinate_2[0] > self.arr.shape[1] or coordinate_2[1] > self.arr.shape[0]:
-            raise ValueError("Coordinates are out of bounds of the image dimensions")
+            raise ValueError(Fore.RED + "Coordinates are out of bounds of the image dimensions")
         
         x1, y1 = coordinate_1
         x2, y2 = coordinate_2
@@ -214,7 +234,7 @@ class ImageProcessing:
         
         Parameters:
             num (int, optional): The number of 90-degree rotations to apply. Positive values rotate clockwise, negative values rotate counter-clockwise.
-            Default is 1 (90 degrees clockwise).
+                Default is 1 (90 degrees clockwise).
             
         Returns:
             ndarray: The rotated image array.
@@ -223,7 +243,7 @@ class ImageProcessing:
             ValueError: If num is not an integer.
         """
         if not isinstance(num, int):
-            raise ValueError("num must be an integer")
+            raise ValueError(Fore.RED + "num must be an integer")
         if num > 4:
             num = num % 4
         elif num == 0:
@@ -248,7 +268,7 @@ class ImageProcessing:
         elif plane == 'h':
             self.arr = np.fliplr(self.arr)
         else:
-            raise ValueError("axis must be either 'h' (horizontal) or 'v' (vertical)")
+            raise ValueError(Fore.RED + "axis must be either 'h' (horizontal) or 'v' (vertical)")
         
         return self.arr
     
@@ -303,9 +323,9 @@ class ImageProcessing:
             ValueError: If the threshold is not between 0 and 255.
         """
         if not isinstance(threshold, int):
-            raise TypeError("threshold must be an integer")
+            raise TypeError(Fore.RED + "threshold must be an integer")
         if threshold < 0 or threshold > 255:
-            raise ValueError("threshold must be between 0 and 255")
+            raise ValueError(Fore.RED + "threshold must be between 0 and 255")
         if self.arr.ndim == 3:
             # Convert to grayscale first if the image is in RGB format
             self.grayscale()
@@ -333,13 +353,13 @@ class ImageProcessing:
             TypeError: If the kernel is not a Numpy array.
         """
         if not isinstance(kernel, ndarray):
-            raise TypeError("kernel must be a NumPy ndarray")
+            raise TypeError(Fore.RED + "kernel must be a NumPy ndarray")
         if not isinstance(image_array, ndarray):    
-            raise TypeError("image_array must be a NumPy ndarray")
+            raise TypeError(Fore.RED + "image_array must be a NumPy ndarray")
         if image_array.ndim != 2:
-            raise ValueError("image_array must be a 2D array representing a grayscale image. Use convolve3d instead")
+            raise ValueError(Fore.RED + "image_array must be a 2D array representing a grayscale image. Use convolve3d instead")
         if kernel.ndim != 2:
-            raise ValueError("kernel must be a 2D array representing the convolution kernel")
+            raise ValueError(Fore.RED + "kernel must be a 2D array representing the convolution kernel")
         
         # Flip the kernel for convolution
         # This is necessary because convolution is defined as a cross-correlation operation
@@ -380,13 +400,13 @@ class ImageProcessing:
         dimensions = image_array.ndim
 
         if dimensions > 3:
-            raise ValueError("image_array must be a 2D or 3D array representing an image")
+            raise ValueError(Fore.RED + "image_array must be a 2D or 3D array representing an image")
         if not isinstance(image_array, ndarray):
-            raise TypeError("image_array must be a NumPy ndarray")
+            raise TypeError(Fore.RED + "image_array must be a NumPy ndarray")
         if not isinstance(kernel, ndarray):
-            raise TypeError("kernel must be a NumPy ndarray")
+            raise TypeError(Fore.RED + "kernel must be a NumPy ndarray")
         if kernel.ndim != 2:
-            raise ValueError("kernel must be a 2D array representing the convolution kernel")
+            raise ValueError(Fore.RED + "kernel must be a 2D array representing the convolution kernel")
         
         if dimensions == 2:
             return ImageProcessing.convolve2d(image_array, kernel)
@@ -420,13 +440,13 @@ class ImageProcessing:
             TypeError: If kernel is not a NumPy ndarray.
         """
         if not isinstance(image_array, ndarray):
-            raise TypeError("image_array must be a NumPy ndarray")
+            raise TypeError(Fore.RED + "image_array must be a NumPy ndarray")
         if image_array.ndim > 3:
-            raise ValueError("image_array must be a 2D or 3D array representing an image")
+            raise ValueError(Fore.RED + "image_array must be a 2D or 3D array representing an image")
         if not isinstance(kernel, ndarray):
-            raise TypeError("kernel must be a NumPy ndarray")
+            raise TypeError(Fore.RED + "kernel must be a NumPy ndarray")
         if kernel.ndim != 2:
-            raise ValueError("kernel must be a 2D array representing the convolution kernel")
+            raise ValueError(Fore.RED + "kernel must be a 2D array representing the convolution kernel")
         
         if image_array.ndim == 2:
             return convolve(image_array, kernel, mode='reflect')
@@ -454,9 +474,9 @@ class ImageProcessing:
             ValueError: If the kernel is not a 2D array.
         """
         if not isinstance(kernel, ndarray):
-            raise TypeError("kernel must be a NumPy ndarray")
+            raise TypeError(Fore.RED + "kernel must be a NumPy ndarray")
         if kernel.ndim != 2:
-            raise ValueError("kernel must be a 2D array representing the convolution kernel")
+            raise ValueError(Fore.RED + "kernel must be a 2D array representing the convolution kernel")
         
         # Converting to np.float32 to ensure that negative values amd values>255 are not trimmed off or distorted during convolution
         self.arr = ImageProcessing.convolve3d_scipy(self.arr.astype(np.float32), kernel)
@@ -478,9 +498,9 @@ class ImageProcessing:
             ValueError: If the kernel is not a 2D array.
         """
         if not isinstance(kernel, ndarray):
-            raise TypeError("kernel must be a NumPy ndarray")
+            raise TypeError(Fore.RED + "kernel must be a NumPy ndarray")
         if kernel.ndim != 2:
-            raise ValueError("kernel must be a 2D array representing the convolution kernel")
+            raise ValueError(Fore.RED + "kernel must be a 2D array representing the convolution kernel")
         
         # Converting to np.float32 to ensure that negative values amd values>255 are not trimmed off or distorted during convolution
         self.arr = ImageProcessing.convolve3d_scipy(self.arr.astype(np.float32), kernel)
@@ -494,7 +514,7 @@ class ImageProcessing:
         Parameters:
             kernel_x (ndarray, optional): The kernel for detecting edges in the x direction. Default is the Sobel x kernel.
             kernel_y (ndarray, optional): The kernel for detecting edges in the y direction. Default is the Sobel y kernel.
-            If you want to use only 1 kernel, then pass the same kernel for both kernel_x and kernel_y
+                If you want to use only 1 kernel, then pass the same kernel for both kernel_x and kernel_y
         
         Returns:
             ndarray: The edge-detected image array.
@@ -504,13 +524,13 @@ class ImageProcessing:
             ValueError: If the kernel_x or kernel_y is not a 2D array.
         """
         if not isinstance(kernel_x, ndarray):
-            raise TypeError("kernel_x must be a NumPy ndarray")
+            raise TypeError(Fore.RED + "kernel_x must be a NumPy ndarray")
         if not isinstance(kernel_y, ndarray):
-            raise TypeError("kernel_y must be a NumPy ndarray")
+            raise TypeError(Fore.RED + "kernel_y must be a NumPy ndarray")
         if kernel_x.ndim != 2:
-            raise ValueError("kernel_x must be a 2D array representing the convolution kernel")
+            raise ValueError(Fore.RED + "kernel_x must be a 2D array representing the convolution kernel")
         if kernel_y.ndim != 2:
-            raise ValueError("kernel_y must be a 2D array representing the convolution kernel")
+            raise ValueError(Fore.RED + "kernel_y must be a 2D array representing the convolution kernel")
         
         if self.arr.ndim == 3:
             # If the image is in RGB format, convert it to grayscale first
@@ -563,11 +583,11 @@ class ImageProcessing:
         parameters = (total_px, divisions, merge, channels)
 
         if not any(isinstance(parameter, int) for parameter in parameters) or any(parameter < 0 for parameter in parameters):
-            raise TypeError("All the parameters must be positive integers")
+            raise TypeError(Fore.RED + "All the parameters must be positive integers")
         if channels not in [1,3,4]:
-            raise ValueError("channels must be one of 1,3,4")
+            raise ValueError(Fore.RED + "channels must be one of 1,3,4")
         if direction not in ['h', 'v']:
-            raise ValueError("direction must be either 'h' (horizontal) or 'v' (vertical)")
+            raise ValueError(Fore.RED + "direction must be either 'h' (horizontal) or 'v' (vertical)")
         
         px_per_merging = merge*divisions    #px_per_merging must be a multiple of divisions according to calculations
         px_per_division = int((total_px + px_per_merging*(1-divisions))/divisions)  #According to calculations

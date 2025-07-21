@@ -2,14 +2,16 @@
 import numpy as np
 from PIL import Image
 from Class_ImgProcessing import ImageProcessing as ip
+from colorama import Fore, init
 
 def main():
-    invalid_choice = "Invalid Choice. Enter again"      # text to be displayed when user enters an invalid choice
+    invalid_choice = Fore.RED + "Invalid Choice. Enter again"      # text to be displayed when user enters an invalid choice
     new_img = True      # User has to enter path of image
+    init(autoreset=True)      # Initialize colorama to reset colors after each print
 
     # Introduction
     print()
-    print("Welcome to the Image Processing Program!")
+    print(Fore.LIGHTYELLOW_EX + "Welcome to the Image Processing Program!")
     print()
 
     while True:     # flag = Invalid Input / All Operations
@@ -19,8 +21,9 @@ def main():
         print("3. Flip Image")
         print("4. Apply Filter")
         print("5. Generate random square striped image")
+        print("6. Exit")
         print()
-        operation = int(input("Enter the number of the operation you want to perform: "))
+        operation = int(input("Enter choice: "))
         print()
 
         while True:     # flag = Same Choice
@@ -31,7 +34,7 @@ def main():
                 # Converting Image to Numpy array
                 img = Image.open(path)
                 original_img = np.array(img)
-                print("Your selected image is displayed")
+                print(Fore.GREEN + "Your selected image is displayed")
                 print()
                 ip.display_img(original_img)
 
@@ -40,14 +43,14 @@ def main():
 
             # Crop Image
             if operation == 1:
-                print("You chose to crop the image.")
+                print(Fore.CYAN + "You chose to crop the image.")
                 print()
                 x1 = int(input("Enter initial x coordinate: "))
                 y1 = int(input("Enter initial y coordinate: "))
                 x2 = int(input("Enter final x coordinate: "))
                 y2 = int(input("Enter final y coordinate: "))
                 print()
-                print("Cropping the image...")
+                print(Fore.GREEN + "Cropping the image...")
                 print()
 
                 coord_1, coord_2 = (x1, y1), (x2, y2)
@@ -55,7 +58,7 @@ def main():
 
             # Rotate Image
             elif operation == 2:
-                print("You chose to rotate the image.")
+                print(Fore.CYAN + "You chose to rotate the image.")
                 print()
                 print("Choose: ")
                 print("1. Rotate clockwise")
@@ -66,7 +69,7 @@ def main():
                     print()
 
                     if direction == 1:      # Clockwise
-                        print("You chose to rotate clockwise.")
+                        print(Fore.CYAN + "You chose to rotate clockwise.")
                         print("Available angles: 90, 180, 270")
 
                         while True:     # flag = Invalid Angle 1
@@ -74,13 +77,13 @@ def main():
                             if angle in [90, 180, 270]:
                                 break
                             else:
-                                print("Invalid angle. Please enter 90, 180, or 270.")   # Returns to Invalid Angle 1
+                                print(Fore.RED + "Invalid angle. Please enter 90, 180, or 270.")   # Returns to Invalid Angle 1
 
                         num = angle // 90   #Converting angle to number of turns
                         break
 
                     elif direction == 2:    # Counter-clockwise
-                        print("You chose to rotate counter-clockwise.")
+                        print(Fore.CYAN + "You chose to rotate counter-clockwise.")
                         print("Available angles: 90, 180, 270")
 
                         while True:     # flag = Invalid Angle 2
@@ -88,7 +91,7 @@ def main():
                             if angle in [90, 180, 270]:
                                 break
                             else:
-                                print("Invalid angle. Please enter 90, 180, or 270.")    # Returns to Invalid Angle 2
+                                print(Fore.RED + "Invalid angle. Please enter 90, 180, or 270.")    # Returns to Invalid Angle 2
 
                         num = -angle // 90  #Converting angle to number of turns
                         break
@@ -97,13 +100,13 @@ def main():
                         print(invalid_choice)   # Returns to Invalid Rotate Direction
 
                 print()
-                print("Rotating the image...")
+                print(Fore.GREEN + "Rotating the image...")
                 print()
                 result = img.rotate_img(num)
 
             # Flip Image
             elif operation == 3:
-                print("You chose to flip the image.")
+                print(Fore.CYAN + "You chose to flip the image.")
                 print()
                 print("Choose flip direction:")
                 print("1. Horizontal")
@@ -114,12 +117,12 @@ def main():
                     print()
 
                     if direction == 1:
-                        print("Flipping image horizontally...")
+                        print(Fore.GREEN + "Flipping image horizontally...")
                         print()
                         result = img.flip_img('h')
                         break
                     elif direction == 2:
-                        print("Flipping image vertically...")
+                        print(Fore.GREEN + "Flipping image vertically...")
                         print()
                         result = img.flip_img('v')
                         break
@@ -128,7 +131,7 @@ def main():
 
             # Apply Filters
             elif operation == 4:
-                print("You chose to apply a filter to the image.")
+                print(Fore.CYAN + "You chose to apply a filter to the image.")
                 print()
                 print("Available filters:")
                 print("1. Negative")
@@ -144,32 +147,32 @@ def main():
                     print()
 
                     if filter_choice == 1:
-                        print("Generating Negative...")
+                        print(Fore.GREEN + "Generating Negative...")
                         print()
                         result = img.negative()
                         break
                     elif filter_choice == 2:
-                        print("Grayscaling Image...")
+                        print(Fore.GREEN + "Grayscaling Image...")
                         print()
                         result = img.grayscale()
                         break
                     elif filter_choice == 3:
-                        print("Binarising Image...")
+                        print(Fore.GREEN + "Binarising Image...")
                         print()
                         result = img.binarise()
                         break
                     elif filter_choice == 4:
-                        print("Blurring Image...")
+                        print(Fore.GREEN + "Blurring Image...")
                         print()
                         result = img.blur_img()
                         break
                     elif filter_choice == 5:
-                        print("Sharpening Image...")
+                        print(Fore.GREEN + "Sharpening Image...")
                         print()
                         result = img.sharpen_img()
                         break
                     elif filter_choice == 6:
-                        print("Detecting Edges...")
+                        print(Fore.GREEN + "Detecting Edges...")
                         print()
                         result = img.edge_detection()
                         break
@@ -178,7 +181,7 @@ def main():
 
             # Generate Image
             elif operation == 5:
-                print("You chose to generate an image")
+                print(Fore.CYAN + "You chose to generate an image")
                 print()
                 total_px = int(input("Enter the length/breadth in pixles: "))
                 divisions = int(input("Enter the number of divisions, i.e., number of stripes: "))
@@ -186,10 +189,16 @@ def main():
                 channels = int(input("Enter the number of channels (i.e., 3 for RGB image. Must be one of 1, 3, 4): "))
                 direction = input("Do you want horizontal or vertical stripes ('h' for horizontal, 'v' for vertical)?: ")
                 print()
-                print("Generating Image...")
+                print(Fore.GREEN + "Generating Image...")
                 print()
                 result = ip.generate_image(total_px, divisions, merge, channels, direction)    #type: ignore
-             
+            
+            # Exit
+            elif operation == 6:
+                print(Fore.LIGHTYELLOW_EX + "Thank you for using the Image Processing Program!") 
+                print()
+                return  # Exits the program
+            
             #Invalid Choice
             else:
                 print(invalid_choice)
@@ -198,7 +207,7 @@ def main():
             ip.display_img(result)     # Displaying the modified Image
 
             if operation != 5:      # No original image for image generation, so no comparison
-                compare = input("Do you want to compare the original & modified images side-by-side (y/n)?: ")
+                compare = input(Fore.YELLOW + "Do you want to compare the original & modified images side-by-side (y/n)?: ")
                 print()
 
                 if compare.lower().strip() == 'y':  # If user wants to compare
@@ -237,7 +246,7 @@ def main():
                     same_op = False
                     break       # Goes to check_same_op -> check_all_op
                 elif choice == 3:
-                    print("Thank you for using the Image Processing Program!") 
+                    print(Fore.LIGHTYELLOW_EX + "Thank you for using the Image Processing Program!") 
                     print()
                     return  # Exits the program
                 else:

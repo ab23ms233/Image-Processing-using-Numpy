@@ -41,6 +41,7 @@ The `ImageProcessing` class supports the following operations:
 - **PIL (Pillow)** – for loading and converting images to NumPy arrays.
 - **Matplotlib** – for displaying images and visual comparisons.
 - **SciPy (`scipy.ndimage.convolve`)** – for faster and flexible convolution on 2D and 3D arrays.
+- **Colorama** - for an interactive terminal with coloured texts
 
 ---
 
