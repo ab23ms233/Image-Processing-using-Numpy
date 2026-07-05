@@ -6,29 +6,50 @@ from scipy.ndimage import convolve
 
 # ImageProcessing class for image manipulation and processing
 class ImageProcessing:
-    """A class for processing images using NumPy arrays.
+    """
+    A class for processing images using NumPy arrays.
     This class provides methods for displaying, cropping, rotating, flipping, converting to grayscale,
-    binarizing, convolving, blurring, and sharpening images.
-    
-    Attributes:
-        arr (ndarray): The image data as a NumPy array.
-    
-    Methods:
-        image(): Displays the image stored in the instance.
-        display_img(image_array, text='', position='center'): Displays an image with an optional text label.
-        compare_img(*args): Compares multiple images side by side.
-        crop_img(coordinate_2, coordinate_1=(0,0)): Crops the image according to the provided coordinates.
-        rotate_img(num=1): Rotates the image by 90 degrees clockwise or counterclockwise.
-        flip_img(plane='h'): Flips the image horizontally or vertically.
-        is_rgb(): Checks if the image is in RGB format.
-        negative(): Converts the image to its negative.
-        grayscale(): Converts the image to grayscale.
-        binarise(threshold=128): Converts the image to binary using a specified threshold.
-        convolve2d(image_array, kernel): Applies a 2D convolution to an image array using a specified kernel.
-        convolve3d(image_array, kernel): Applies a 3D convolution to an image array using a specified kernel.
-        blur_img(kernel): Applies a blur to the image using a specified kernel.
-        sharpen_img(kernel): Applies a sharpening filter to the image using a specified kernel.
-    
+    binarizing, convolving, blurring, sharpening, and generating images.
+
+    ## Instance Attributes:
+        **arr**: *(ndarray)*
+        The image data as a NumPy array.
+
+    ## Class Attributes:
+        **sharpen_kernel**: *(ndarray)*
+        Kernel for sharpening the image.
+        
+        **blur_kernel**: *(ndarray)*
+        Kernel for blurring the image.
+
+        **sobel_x**: *(ndarray)*
+        Kernel for edge detection in the x direction.
+
+        **sobel_y**: *(ndarray)*
+        Kernel for edge detection in the y direction.
+
+        **gray_convert_arr**: *(ndarray)*
+        Array for converting RGB to grayscale using the standard luminance formula.
+
+    ## Methods:
+        **image**: Displays the image stored in the instance.
+        **display_img**: Displays an image with an optional text label.
+        **compare_img**: Compares multiple images side by side.
+        **crop_img**: Crops the image according to the provided coordinates.
+        **rotate_img**: Rotates the image by 90 degrees clockwise or counterclockwise.
+        **flip_img**: Flips the image horizontally or vertically.
+        **is_rgb**: Checks if the image is in RGB format.
+        **negative**: Converts the image to its negative.
+        **grayscale**: Converts the image to grayscale.
+        **binarise**: Converts the image to binary using a specified threshold.
+        **convolve2d**: Applies a 2D convolution to an image array using a specified kernel.
+        **convolve3d**: Applies a 3D convolution to an image array using a specified kernel.
+        **convolve3d_scipy**: Applies a 3D convolution using SciPy.
+        **blur_img**: Applies a blur to the image using a specified kernel.
+        **sharpen_img**: Applies a sharpening filter to the image using a specified kernel.
+        **edge_detection**: Applies edge detection to the image using specified kernels.
+        **generate_image**: Generates a random square striped image with specified divisions and merging sections.
+
     Raises:
         TypeError: If the image_array is not a NumPy ndarray.
         ValueError: If the image_array does not have the correct dimensions (2D or 3D).
@@ -92,7 +113,7 @@ class ImageProcessing:
             image_array (ndarray): The image data to be displayed, expected as a NumPy array.
             text (str, optional): Text to display with the image. Default is an empty string - no text.
             postion (str, optional): Position of the text. Default is 'center'. 
-            Must be one of 'center', 'left', or 'right'.
+                Must be one of 'center', 'left', or 'right'.
         
         Returns:
             None
@@ -214,7 +235,7 @@ class ImageProcessing:
         
         Parameters:
             num (int, optional): The number of 90-degree rotations to apply. Positive values rotate clockwise, negative values rotate counter-clockwise.
-            Default is 1 (90 degrees clockwise).
+                Default is 1 (90 degrees clockwise).
             
         Returns:
             ndarray: The rotated image array.
@@ -494,7 +515,7 @@ class ImageProcessing:
         Parameters:
             kernel_x (ndarray, optional): The kernel for detecting edges in the x direction. Default is the Sobel x kernel.
             kernel_y (ndarray, optional): The kernel for detecting edges in the y direction. Default is the Sobel y kernel.
-            If you want to use only 1 kernel, then pass the same kernel for both kernel_x and kernel_y
+                If you want to use only 1 kernel, then pass the same kernel for both kernel_x and kernel_y
         
         Returns:
             ndarray: The edge-detected image array.
