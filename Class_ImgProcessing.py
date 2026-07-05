@@ -2,7 +2,7 @@ import numpy as np
 from numpy import ndarray
 import matplotlib.pyplot as plt
 from typing import Union, Tuple, Literal
-from scipy.ndimage import convolve
+from scipy.ndimage import convolve, gaussian_filter
 
 # ImageProcessing class for image manipulation and processing
 class ImageProcessing:
@@ -58,7 +58,7 @@ class ImageProcessing:
                                [-1, 5, -1], 
                                [0, -1, 0]])
     
-    blur_kernel = np.array([[1, 2, 1],      #Gaussian Blur
+    blur_kernel = np.array([[1, 2, 1],      # Gaussian Blur
                             [2, 4, 2], 
                             [1, 2, 1]])/16
     
@@ -460,12 +460,13 @@ class ImageProcessing:
             
             return output
 
-    def blur_img(self, kernel: ndarray = blur_kernel) -> ndarray:
+    def blur_img(self, kernel: ndarray = blur_kernel, strength: float = 1.0) -> ndarray:
         """
         Applies a blur to the image using a specified kernel.
 
         Parameters:
             kernel (ndarray, optional): The kernel to be used for blurring. Default is a Gaussian kernel.
+            strength (float, optional): The strength of the blur effect. Default is 1.0. Must be a positive float.
         
         Returns:
             ndarray: The blurred image array.
@@ -478,19 +479,25 @@ class ImageProcessing:
             raise TypeError("kernel must be a NumPy ndarray")
         if kernel.ndim != 2:
             raise ValueError("kernel must be a 2D array representing the convolution kernel")
-        
+        if strength <= 0:
+            raise ValueError("strength must be a positive float")
+
+        if strength != 1.0:
+            # Adjust the kernel based on the strength
+            kernel = gaussian_filter(kernel, sigma=strength)
+            
         # Converting to np.float32 to ensure that negative values amd values>255 are not trimmed off or distorted during convolution
         self.arr = ImageProcessing.convolve3d_scipy(self.arr.astype(np.float32), kernel)
         self.arr = np.clip(self.arr, 0, 255).astype(np.uint8)
         return self.arr
     
-    def sharpen_img(self, kernel: ndarray = sharpen_kernel) -> ndarray:
+    def sharpen_img(self, kernel: ndarray = sharpen_kernel, strength: float = 1.0) -> ndarray:
         """
         Applies a sharpening filter to the image using a specified kernel.
     
         Parameters:
             kernel (ndarray, optional): The kernel to be used for sharpening. Default is a sharpening kernel.
-        
+            strength (float, optional): The strength of the sharpening effect. Default is 1.0. Must be a positive float.
         Returns:
             ndarray: The sharpened image array.
         
@@ -502,9 +509,18 @@ class ImageProcessing:
             raise TypeError("kernel must be a NumPy ndarray")
         if kernel.ndim != 2:
             raise ValueError("kernel must be a 2D array representing the convolution kernel")
+        if strength <= 0:
+            raise ValueError("strength must be a positive float")
         
-        # Converting to np.float32 to ensure that negative values amd values>255 are not trimmed off or distorted during convolution
-        self.arr = ImageProcessing.convolve3d_scipy(self.arr.astype(np.float32), kernel)
+        if strength != 1.0:
+            # Adjust the kernel based on the strength
+            blur_img = ImageProcessing(self.arr.copy()).blur_img(strength=strength)
+            diff = self.arr.astype(np.float32) - blur_img.astype(np.float32)
+            self.arr = self.arr.astype(np.float32) + diff * strength
+        else:
+            # Converting to np.float32 to ensure that negative values amd values>255 are not trimmed off or distorted during convolution
+            self.arr = ImageProcessing.convolve3d_scipy(self.arr.astype(np.float32), kernel)
+            
         self.arr = np.clip(self.arr, 0, 255).astype(np.uint8)
         return self.arr
 
