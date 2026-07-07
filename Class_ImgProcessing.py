@@ -1,7 +1,9 @@
+from math import e
+
 import numpy as np
 from numpy import ndarray
 import matplotlib.pyplot as plt
-from typing import Union, Tuple, Literal
+from typing import Optional, Union, Tuple, Literal
 from scipy.ndimage import convolve, gaussian_filter
 
 # ImageProcessing class for image manipulation and processing
@@ -460,67 +462,71 @@ class ImageProcessing:
             
             return output
 
-    def blur_img(self, kernel: ndarray = blur_kernel, strength: float = 1.0) -> ndarray:
+    def blur_img(self, strength: float = 1.0, kernel: Optional[ndarray] = None) -> ndarray:
         """
-        Applies a blur to the image using a specified kernel.
+        Applies a blur to the image using a specified kernel. If strength is provided, it adjusts the blur effect accordingly and does not use kernel. If kernel is provided, it uses that kernel for blurring instead of the default Gaussian kernel.
 
         Parameters:
-            kernel (ndarray, optional): The kernel to be used for blurring. Default is a Gaussian kernel.
             strength (float, optional): The strength of the blur effect. Default is 1.0. Must be a positive float.
-        
+            kernel (ndarray, optional): The kernel to be used for blurring. Default is None.
         Returns:
             ndarray: The blurred image array.
         
         Raises:
             TypeError: If the kernel is not a Numpy ndarray.
             ValueError: If the kernel is not a 2D array.
+            ValueError: If strength is not a positive float.
         """
-        if not isinstance(kernel, ndarray):
-            raise TypeError("kernel must be a NumPy ndarray")
-        if kernel.ndim != 2:
-            raise ValueError("kernel must be a 2D array representing the convolution kernel")
+        if kernel is not None:
+            if not isinstance(kernel, ndarray):
+                raise TypeError("kernel must be a NumPy ndarray")
+            if kernel.ndim != 2:
+                raise ValueError("kernel must be a 2D array representing the convolution kernel")
         if strength <= 0:
             raise ValueError("strength must be a positive float")
 
-        if strength != 1.0:
-            # Adjust the kernel based on the strength
-            kernel = gaussian_filter(kernel, sigma=strength)
-            
-        # Converting to np.float32 to ensure that negative values amd values>255 are not trimmed off or distorted during convolution
-        self.arr = ImageProcessing.convolve3d_scipy(self.arr.astype(np.float32), kernel)
+        # Adjust the kernel based on the strength
+        if kernel is not None:
+            # Converting to np.float32 to ensure that negative values amd values>255 are not trimmed off or distorted during convolution
+            self.arr = ImageProcessing.convolve3d_scipy(self.arr.astype(np.float32), kernel)
+        else:
+            self.arr = gaussian_filter(self.arr.astype(np.float32), sigma=strength)
+
         self.arr = np.clip(self.arr, 0, 255).astype(np.uint8)
         return self.arr
     
-    def sharpen_img(self, kernel: ndarray = sharpen_kernel, strength: float = 1.0) -> ndarray:
+    def sharpen_img(self, strength: float = 1.0, kernel: Optional[ndarray]=None) -> ndarray:
         """
-        Applies a sharpening filter to the image using a specified kernel.
+        Applies a sharpening filter to the image using a specified kernel. If strength is provided, it adjusts the sharpening effect accordingly and does not use kernel. If kernel is provided, it uses that kernel for sharpening instead of the default sharpening kernel.
     
         Parameters:
-            kernel (ndarray, optional): The kernel to be used for sharpening. Default is a sharpening kernel.
             strength (float, optional): The strength of the sharpening effect. Default is 1.0. Must be a positive float.
+            kernel (ndarray, optional): The kernel to be used for sharpening. Default is None.
         Returns:
             ndarray: The sharpened image array.
         
         Raises:
             TypeError: If the kernel is not a Numpy ndarray.
             ValueError: If the kernel is not a 2D array.
+            ValueError: If strength is not a positive float.
         """
-        if not isinstance(kernel, ndarray):
-            raise TypeError("kernel must be a NumPy ndarray")
-        if kernel.ndim != 2:
-            raise ValueError("kernel must be a 2D array representing the convolution kernel")
+        if kernel is not None:
+            if not isinstance(kernel, ndarray):
+                raise TypeError("kernel must be a NumPy ndarray")
+            if kernel.ndim != 2:
+                raise ValueError("kernel must be a 2D array representing the convolution kernel")
         if strength <= 0:
             raise ValueError("strength must be a positive float")
         
-        if strength != 1.0:
+        if kernel is not None:
+            # print(kernel)
+            # Converting to np.float32 to ensure that negative values amd values>255 are not trimmed off or distorted during convolution
+            self.arr = ImageProcessing.convolve3d_scipy(self.arr.astype(np.float32), kernel)
+        else:
             # Adjust the kernel based on the strength
             blur_img = ImageProcessing(self.arr.copy()).blur_img(strength=strength)
             diff = self.arr.astype(np.float32) - blur_img.astype(np.float32)
             self.arr = self.arr.astype(np.float32) + diff * strength
-        else:
-            # Converting to np.float32 to ensure that negative values amd values>255 are not trimmed off or distorted during convolution
-            self.arr = ImageProcessing.convolve3d_scipy(self.arr.astype(np.float32), kernel)
-            
         self.arr = np.clip(self.arr, 0, 255).astype(np.uint8)
         return self.arr
 

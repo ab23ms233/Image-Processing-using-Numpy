@@ -1,14 +1,21 @@
 import streamlit as st
 from PIL import Image
 import numpy as np
-from Class_ImgProcessing import ImageProcessing
+from Class_Actions import ImageState, Actions
 import io
+import time
 
 # Page configuration
 st.set_page_config(
     page_title="Image Processing Application",
     layout="wide",
     initial_sidebar_state="collapsed")
+
+# Maximum image dimension
+MAX_SIZE = 1200
+
+operations = ["Sharpen", "Blur", "Rotate Clockwise", "Rotate Anti-clockwise", ""]
+tabs = ["Transform", "Filters", "Colors", "History"]
 
 # Custom dark theme styling for the hero and cards
 st.markdown(
@@ -107,13 +114,15 @@ st.markdown(
 
 # LANDING PAGE
 def landing_page():
+    print("Landing page")
     # HERO SECTION
     hero_left, hero_right = st.columns([1.5, 1], gap="medium")
 
     # Left side
     with hero_left:
+        start = time.perf_counter()
         # Heading
-        st.markdown("<h1 style='color:#f8fafc; margin-bottom: 0.25rem;'>Image Processing Application</h1>", unsafe_allow_html=True)
+        st.markdown("<h1 style='color:#f8fafc; margin-bottom: 0.25rem;'>Image Processing Studio</h1>", unsafe_allow_html=True)
         # Description
         st.markdown("<p style='color:#cbd5e1; font-size:1.2rem; margin-top:0; max-width:650px;'>Upload, edit and download images with fast one-click controls in a clean dark interface.</p>",
                     unsafe_allow_html=True)
@@ -123,18 +132,30 @@ def landing_page():
         file_uploader_col, right = st.columns([3, 1])
         with file_uploader_col:
             uploaded_file = st.file_uploader("Upload your image", type=["jpg", "jpeg", "png", "bmp"])
-        
-    # st.write("")
+        print(f"Time for rendering hero_left: {time.perf_counter() - start}")
     
     # Right side
     with hero_right:
-        placeholder = Image.open("images/deep-mind-compressed.jpg").convert("RGB")
+        # start = time.perf_counter()
+
         # Image
-        st.image(placeholder, use_container_width=True)
+        @st.cache_data
+        def load_image():
+            image = Image.open("images/deep-mind-compressed.webp").convert("RGB")
+            return image
+        
+        start = time.perf_counter()
+        hero_img = load_image()
+        print(f"Time for loading image: {time.perf_counter()-start}")
+        start = time.perf_counter()
+        st.image(hero_img, use_container_width=True)
+        print(f"Time for rendering image: {time.perf_counter()-start}")
         # Description
-        st.markdown(
-    "<p style='text-align: center;'>Photo by <a href='https://unsplash.com/@googledeepmind' target='_blank'>Google DeepMind</a></p>",
+        st.markdown("<p style='text-align: center;'>Photo by <a href='https://unsplash.com/@googledeepmind' target='_blank'>Google DeepMind</a></p>",
     unsafe_allow_html=True)
+        # print(f"Time for rendering hero_right: {time.perf_counter() - start}")
+    
+    start = time.perf_counter()
     # Feature cards
     st.markdown("---")
     card_1, card_2, card_3, card_4 = st.columns(4, gap="small")
@@ -148,145 +169,160 @@ def landing_page():
         st.markdown("<div class='feature-card feature-card-cyan'><h3>⬇ Download</h3><p>Save your edited image as a PNG.</p></div>", unsafe_allow_html=True)
 
     st.markdown("---")
+    print(f"Time for rendering feature_cards: {time.perf_counter() - start}")
 
     # If file is uploaded
     if uploaded_file is not None:
         img = Image.open(uploaded_file).convert("RGB")
-        st.session_state["ori_img"] = np.array(img)
-        st.session_state["curr_img"] = np.array(img)
+
+        # Reduced height and width of images (in case it is larger than MAX_SIZE)
+        h, w = img.height, img.width
+        scale = min(MAX_SIZE / h, MAX_SIZE / w, 1)
+        new_w = int(w * scale)
+        new_h = int(h * scale)
+        img = img.resize((new_w, new_h))
+
+        image_arr = np.array(img)
+        st.session_state["ori_img"] = ImageState("Original", image_arr)
+        st.session_state["curr_img"] = ImageState("Original", image_arr)
         st.rerun()
 
 
 # EDITOR PAGE
 def editor_page():
+    # print("Editor page")
     if "history" not in st.session_state:
         st.session_state["history"] = []
     if "redo_stack" not in st.session_state:
         st.session_state["redo_stack"] = []
-    if "operation_history" not in st.session_state:
-        st.session_state["operation_history"] = []
+    if "selected_tool" not in st.session_state:
+        st.session_state["selected_tool"] = {"tab": None, "tool": None}
+    
+    original, processed, editor_pane = st.columns([1, 1, 1.5], gap="medium")
+    # start = time.perf_counter()
 
-    original, processed = st.columns(2, gap="small")
     # Original image
     with original:
-        st.subheader("Original")
-        st.image(Image.fromarray(st.session_state["ori_img"]), width=360)
+        st.markdown("<h3 style='text-align: center;'>Original</h3>", unsafe_allow_html=True)
+        st.image(Image.fromarray(st.session_state["ori_img"].img_arr), width=360)
     # Processed image
     with processed:
-        st.subheader("Processed (preview)")
-        st.image(Image.fromarray(st.session_state["curr_img"]), width=360)
+        st.markdown("<h3 style='text-align: center;'>Processed</h3>", unsafe_allow_html=True)
+        st.image(Image.fromarray(st.session_state["curr_img"].img_arr), width=360)
     st.markdown("---")
 
-    # Function to apply image operations
-    def apply_operation(operation, name):
-        # Including last image state in history
-        st.session_state["history"].append(st.session_state["curr_img"].copy())
-        st.session_state["operation_history"].append(name)
-        # Clearing redo stack
-        st.session_state["redo_stack"].clear()
+    # print(f"Time for displaying images: {time.perf_counter() - start}")
+    
+    # Editor pane
+    with editor_pane:
+        # Different tabs for image processing tools
+        transform_tab, filter_tab, color_tab, history_tab = st.tabs(tabs)
 
-        # Applying current operation
-        proc = ImageProcessing(st.session_state["curr_img"].copy())
-        st.session_state["curr_img"] = operation(proc)
-        # Rerun to see changes
-        st.rerun()
-
-    # Different tabs for image processing tools
-    transform_tab, filter_tab, color_tab, generate_tab = st.tabs(
-    ["Transform", "Filters", "Colors", "Generate"])
-
-    # TRANSFORM TAB
-    with transform_tab:
-        st.subheader("Transform")
-        rotate_col, flip_col = st.columns(2, gap="large")
-
-        # Rotate
-        with rotate_col:
-            st.markdown("### Rotate")
-            clock_col, anti_clock_col = st.columns(2, gap="medium")
-            
-            with clock_col:     # Clockwise
-                if st.button("⟳ Clockwise", use_container_width=True, key="rotate_clockwise"):
-                    apply_operation(lambda p: p.rotate_img(num=1), "Rotate clockwise")
-            with anti_clock_col:        # Anti-clockwise
-                if st.button("⟲ Anti-Clockwise", use_container_width=True, key="rotate_anticlockwise"):
-                    apply_operation(lambda p: p.rotate_img(num=-1), "Rotate Anti-Clockwise")
-        
-        # Flip
-        with flip_col:      
-            st.markdown("### Flip")
+        # start = time.perf_counter()
+        # TRANSFORM TAB
+        with transform_tab:
+            st.subheader("Transform")
+            st.session_state["selected_tool"]["tab"] = "Transform"
+            # Rotate
+            rot_c_col, rot_ac_col = st.columns(2, gap="medium")
+            Actions.button_renderer(rot_c_col, "⟳ Rotate Clockwise", "rotate_clockwise", lambda p: p.rotate_img(num=1), "Rotate Clockwise")
+            Actions.button_renderer(rot_ac_col, "⟲ Rotate Anti-Clockwise", "rotate_anti_clockwise", lambda p: p.rotate_img(num=-1), "Rotate Anti-clockwise")
+            # Flip
             fliph_col, flipv_col = st.columns(2, gap="medium")
+            Actions.button_renderer(fliph_col, "↔️ Flip Horizontal", "flip_horizontal", lambda p: p.flip_img(plane='h'), "Flip Horizontal")
+            Actions.button_renderer(flipv_col, "↕️ Flip Vertical", "flip_vertical", lambda p: p.flip_img(plane='v'), "Flip Vertical")
 
-            with fliph_col:     # Horizontal
-                if st.button("↔️ Horizontal", use_container_width=True, key="flip_horizontal"):
-                    apply_operation(lambda p: p.flip_img(plane='h'), "Flip Horizontal")
-            with flipv_col:     # Vertical
-                if st.button("↕️ Vertical", use_container_width=True, key="flip_vertical"):
-                    apply_operation(lambda p: p.flip_img(plane='v'), "Flip Vertical")
-    
-    # FILTER
-    with filter_tab:
-        st.subheader("Filters")
-        negative_col, grayscale_col, binarize_col = st.columns(3, gap="medium")
+        # COLORS
+        with color_tab:
+            st.subheader("Colors")
+            st.session_state["selected_tool"]["tab"] = "Colors"
+            negative_col, grayscale_col, binarize_col = st.columns(3, gap="medium")
 
-        with negative_col:      # Negative 
-            if st.button("Negative", use_container_width=True, key="negative"):
-                apply_operation(lambda p: p.negative(), "Negative")
-        with grayscale_col:        # Grayscale
-            if st.button("Grayscale", use_container_width=True, key="grayscale"):
-                apply_operation(lambda p: p.grayscale(), "Grayscale")
-        with binarize_col:      # Binarize
-            if st.button("Binarize", use_container_width=True, key="binarize"):
-                threshold = st.slider("Threshold", 0, 255, 128)
-                apply_operation(lambda p: p.binarise(int(threshold)), "Binarize")
-    
-    
-    action_col, reset_col, download_col = st.columns(3, gap="small")
-
-    # Image operations
-    with action_col:
-        if st.button("Preview"):
-            proc = ImageProcessing(st.session_state["curr_img"].copy())
-            # Binarize
-            if operation == "Binarize":
-                st.session_state["curr_img"] = proc.binarise(int(threshold))
             # Negative
-            elif operation == "Negative":
-                st.session_state["curr_img"] = proc.negative()
+            Actions.button_renderer(negative_col, "Negative", "negative", lambda p: p.negative(), "Negative")
             # Grayscale
-            elif operation == "Grayscale":
-                st.session_state["curr_img"] = proc.grayscale()
+            Actions.button_renderer(grayscale_col, "Grayscale", "grayscale", lambda p: p.grayscale(), "Grayscale")
+            # Binarize
+            with binarize_col:
+                if st.button("Binarize", use_container_width=True, key="binarize"):
+                    st.session_state["selected_tool"]["tab"] = "Binarize"
+
+            # st.markdown("-----")
+
+        # FILTERS
+        with filter_tab:            
+            st.subheader("Filters")
+            st.session_state["selected_tool"]["tab"] = "Filters"
+            sharpen_col, blur_col, edge_col = st.columns(3, gap="medium")
+
             # Sharpen
-            elif operation == "Sharpen":
-                st.session_state["curr_img"] = proc.sharpen_img()
+            with sharpen_col:
+                if st.button("Sharpen", use_container_width=True, key="sharpen"):
+                    st.session_state["selected_tool"]["tool"] = "Sharpen"
             # Blur
-            elif operation == "Blur":
-                st.session_state["curr_img"] = proc.blur_img()
+            with blur_col:
+                if st.button("Blur", use_container_width=True, key="blur"):
+                    st.session_state["selected_tool"]["tool"] = "Blur"
             # Edge detection
-            elif operation == "Edge Detection":
-                st.session_state["curr_img"] = proc.edge_detection()
+            Actions.button_renderer(edge_col, "Edge Detection", "edge_detection", lambda p: p.edge_detection(), "Edge Detection")
+
+            # st.markdown("-----")
+        
+        # Render sliders if required by operation
+        Actions.tool_renderer()
+        
+
+        # HISTORY
+        # with history_tab:
+
+        st.markdown("-----")
+        # print(f"Time for rendering tabs: {time.perf_counter()-start}")
+
+        undo_col, redo_col, reset_col, download_col = st.columns([1, 1, 1.5, 1], gap="small")
+
+        # Undo
+        with undo_col:
+            if st.button("Undo", use_container_width=True, key="undo"):
+                Actions.undo()
+        # Redo
+        with redo_col:
+            if st.button("Redo", use_container_width=True, key="redo"):
+                Actions.redo()
+
+        # Reset to original
+        with reset_col:
+            if st.button("Reset to Original", use_container_width=True, key="reset"):
+                st.session_state["curr_img"] = st.session_state["ori_img"]
+
+                st.session_state["history"] = []
+                st.session_state["redo_stack"] = []
+                st.session_state["operation_history"] = []
+                st.rerun()
+
+        # Download image
+        with download_col:
+            buf = io.BytesIO()
+            final_img = Image.fromarray(st.session_state["curr_img"].img_arr.astype("uint8"))
+            final_img.save(buf, format="PNG")
+            buf.seek(0)
+            st.download_button(
+                label="Download",
+                data=buf,
+                file_name="edited_image.png",
+                mime="image/png", use_container_width=True, key="download")
     
-    # Reset to original
-    with reset_col:
-        if st.button("Reset to Original"):
-            st.session_state["curr_img"] = st.session_state["ori_img"].copy()
-    
-    # Download image
-    with download_col:
-        buf = io.BytesIO()
-        final_img = Image.fromarray(st.session_state["curr_img"].astype("uint8"))
-        final_img.save(buf, format="PNG")
-        buf.seek(0)
-        st.download_button(
-            label="Download",
-            data=buf,
-            file_name="edited_image.png",
-            mime="image/png",
-        )
-    
+    if st.button("Back to Homepage", key="back_to_homepage"):
+        st.session_state.clear()
+        st.rerun()
+    # Displaying history
+    # Actions.draw_history()
+
+
 image_loaded = "ori_img" in st.session_state
 
 if image_loaded:
     editor_page()
 else:
+    start = time.perf_counter()
     landing_page()
+    print(f"Time for rendering homepage: {time.perf_counter()-start}")
