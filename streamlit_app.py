@@ -14,8 +14,7 @@ st.set_page_config(
 # Maximum image dimension
 MAX_SIZE = 1200
 
-operations = ["Sharpen", "Blur", "Rotate Clockwise", "Rotate Anti-clockwise", ""]
-tabs = ["Transform", "Filters", "Colors", "History"]
+tabs = ["Transform", "Filters", "Colors"]
 
 # Custom dark theme styling for the hero and cards
 st.markdown(
@@ -173,18 +172,8 @@ def landing_page():
 
     # If file is uploaded
     if uploaded_file is not None:
-        img = Image.open(uploaded_file).convert("RGB")
-
-        # Reduced height and width of images (in case it is larger than MAX_SIZE)
-        h, w = img.height, img.width
-        scale = min(MAX_SIZE / h, MAX_SIZE / w, 1)
-        new_w = int(w * scale)
-        new_h = int(h * scale)
-        img = img.resize((new_w, new_h))
-
-        image_arr = np.array(img)
-        st.session_state["ori_img"] = ImageState("Original", image_arr)
-        st.session_state["curr_img"] = ImageState("Original", image_arr)
+        st.session_state["image"] = Actions.image_uploaded(uploaded_file, MAX_SIZE)
+        print(st.session_state["image_metadata"]["format"])
         st.rerun()
 
 
@@ -196,8 +185,10 @@ def editor_page():
     if "redo_stack" not in st.session_state:
         st.session_state["redo_stack"] = []
     if "selected_tool" not in st.session_state:
-        st.session_state["selected_tool"] = {"tab": None, "tool": None}
-    
+        st.session_state["selected_tool"] = None
+    if "export_clicked" not in st.session_state:
+        st.session_state["export_clicked"] = False
+
     original, processed, editor_pane = st.columns([1, 1, 1.5], gap="medium")
     # start = time.perf_counter()
 
@@ -216,13 +207,13 @@ def editor_page():
     # Editor pane
     with editor_pane:
         # Different tabs for image processing tools
-        transform_tab, filter_tab, color_tab, history_tab = st.tabs(tabs)
-
+        selected_tab = st.segmented_control("Category", tabs, label_visibility="collapsed", default="Transform")
         # start = time.perf_counter()
+
         # TRANSFORM TAB
-        with transform_tab:
+        if selected_tab == "Transform":
             st.subheader("Transform")
-            st.session_state["selected_tool"]["tab"] = "Transform"
+
             # Rotate
             rot_c_col, rot_ac_col = st.columns(2, gap="medium")
             Actions.button_renderer(rot_c_col, "⟳ Rotate Clockwise", "rotate_clockwise", lambda p: p.rotate_img(num=1), "Rotate Clockwise")
@@ -232,10 +223,25 @@ def editor_page():
             Actions.button_renderer(fliph_col, "↔️ Flip Horizontal", "flip_horizontal", lambda p: p.flip_img(plane='h'), "Flip Horizontal")
             Actions.button_renderer(flipv_col, "↕️ Flip Vertical", "flip_vertical", lambda p: p.flip_img(plane='v'), "Flip Vertical")
 
+        # FILTERS TAB
+        if selected_tab == "Filters":
+            st.subheader("Filters")
+            sharpen_col, blur_col, edge_col = st.columns(3, gap="medium")
+
+            # Sharpen
+            with sharpen_col:
+                if st.button("Sharpen", use_container_width=True, key="sharpen"):
+                    st.session_state["selected_tool"] = "Sharpen"
+            # Blur
+            with blur_col:
+                if st.button("Blur", use_container_width=True, key="blur"):
+                    st.session_state["selected_tool"] = "Blur"
+            # Edge detection
+            Actions.button_renderer(edge_col, "Edge Detection", "edge_detection", lambda p: p.edge_detection(), "Edge Detection")
+
         # COLORS
-        with color_tab:
+        if selected_tab == "Colors":
             st.subheader("Colors")
-            st.session_state["selected_tool"]["tab"] = "Colors"
             negative_col, grayscale_col, binarize_col = st.columns(3, gap="medium")
 
             # Negative
@@ -245,40 +251,17 @@ def editor_page():
             # Binarize
             with binarize_col:
                 if st.button("Binarize", use_container_width=True, key="binarize"):
-                    st.session_state["selected_tool"]["tab"] = "Binarize"
-
-            # st.markdown("-----")
-
-        # FILTERS
-        with filter_tab:            
-            st.subheader("Filters")
-            st.session_state["selected_tool"]["tab"] = "Filters"
-            sharpen_col, blur_col, edge_col = st.columns(3, gap="medium")
-
-            # Sharpen
-            with sharpen_col:
-                if st.button("Sharpen", use_container_width=True, key="sharpen"):
-                    st.session_state["selected_tool"]["tool"] = "Sharpen"
-            # Blur
-            with blur_col:
-                if st.button("Blur", use_container_width=True, key="blur"):
-                    st.session_state["selected_tool"]["tool"] = "Blur"
-            # Edge detection
-            Actions.button_renderer(edge_col, "Edge Detection", "edge_detection", lambda p: p.edge_detection(), "Edge Detection")
-
-            # st.markdown("-----")
+                    st.session_state["selected_tool"] = "Binarize"
         
         # Render sliders if required by operation
-        Actions.tool_renderer()
-        
-
-        # HISTORY
-        # with history_tab:
-
+        Actions.tool_renderer(selected_tab)
         st.markdown("-----")
         # print(f"Time for rendering tabs: {time.perf_counter()-start}")
 
-        undo_col, redo_col, reset_col, download_col = st.columns([1, 1, 1.5, 1], gap="small")
+        # Displaying HISTORY
+        Actions.display_history()
+
+        undo_col, redo_col, reset_col, export_col = st.columns([1, 1, 1.5, 1], gap="small")
 
         # Undo
         with undo_col:
@@ -299,23 +282,40 @@ def editor_page():
                 st.session_state["operation_history"] = []
                 st.rerun()
 
-        # Download image
-        with download_col:
-            buf = io.BytesIO()
-            final_img = Image.fromarray(st.session_state["curr_img"].img_arr.astype("uint8"))
-            final_img.save(buf, format="PNG")
-            buf.seek(0)
-            st.download_button(
-                label="Download",
-                data=buf,
-                file_name="edited_image.png",
-                mime="image/png", use_container_width=True, key="download")
+        # Export image
+        with export_col:
+            if st.button("Export", key="export", use_container_width=True):
+                st.session_state["export_clicked"] = True
+
     
-    if st.button("Back to Homepage", key="back_to_homepage"):
-        st.session_state.clear()
+    # Actions.display_ori_img_info()
+
+    if st.session_state["export_clicked"]:        
+        Actions.on_export_clicked()
+
+            # buf = io.BytesIO()
+            # final_img = Image.fromarray(st.session_state["curr_img"].img_arr.astype("uint8"))
+            # final_img.save(buf, format="PNG")
+            # buf.seek(0)
+            # st.download_button(
+            #     label="Download",
+            #     data=buf,
+            #     file_name="edited_image.png",
+            #     mime="image/png", use_container_width=True, key="download")
+    
+        # Uploading new image
+    
+    # Uploading new image
+    new_image = st.file_uploader("Change Picture", type=["jpeg", "png", "jpg", "bmp"], key="new_image")
+    if new_image:
+        st.session_state["image"] = Actions.image_uploaded(new_image, MAX_SIZE)
         st.rerun()
-    # Displaying history
-    # Actions.draw_history()
+
+    # Back to HOMEPAGE
+    # if st.button("Back to Homepage", key="back_to_homepage"):
+    #     st.session_state.clear()
+    #     st.rerun()
+    
 
 
 image_loaded = "ori_img" in st.session_state
