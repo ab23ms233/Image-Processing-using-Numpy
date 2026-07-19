@@ -1,13 +1,17 @@
 import streamlit as st
 from PIL import Image
 import numpy as np
-from Class_Actions import ImageState, Actions
-import io
+from Class_Actions import Actions
 import time
+
+from components.navbar import render_navbar
+from components.hero import render_hero
+from components.features_tech import render_features_tech
 
 # Page configuration
 st.set_page_config(
-    page_title="Image Processing Application",
+    page_title="Image Processing Studio",
+    page_icon="icons/logo.png",
     layout="wide",
     initial_sidebar_state="collapsed")
 
@@ -15,6 +19,27 @@ st.set_page_config(
 MAX_SIZE = 1200
 
 tabs = ["Transform", "Filters", "Colors"]
+
+# Hide streamlit default header, menu and footer
+st.markdown("""
+<style>
+    header {
+        visibility: hidden;
+    }
+    #MainMenu {
+        visibility: hidden;
+    }
+    footer {
+        visibility: hidden;
+    }
+            
+    .block-container {
+            padding-top: 0.5rem;
+            padding-right: 5rem;
+            padding-left: 5rem;
+            }
+</style>
+""", unsafe_allow_html=True)
 
 # Custom dark theme styling for the hero and cards
 st.markdown(
@@ -29,152 +54,77 @@ st.markdown(
         border: 1px solid rgba(148, 163, 184, 0.18);
         border-radius: 32px;
         padding: 36px;
-    }
-
-    .feature-card {
-    position: relative;
-    background: #0f1720;
-    border: 1px solid rgba(148, 163, 184, 0.15);
-    border-radius: 18px;
-    padding: 22px 22px 22px 30px;
-    overflow: hidden;
-
-    transition:
-        border-color 0.25s ease,
-        transform 0.25s ease,
-        box-shadow 0.25s ease;
-}
-
-/* Left accent strip */
-.feature-card::before {
-    content: "";
-    position: absolute;
-    left: 0;
-    top: 0;
-    width: 6px;
-    height: 100%;
-    border-radius: 18px 0 0 18px;
-}
-
-/* Hover animation */
-.feature-card:hover {
-    transform: translateY(-3px);
-    border-color: var(--accent);
-    box-shadow: 0 8px 20px rgba(0,0,0,0.35);
-}
-
-/* Individual accent colours */
-.feature-card-blue {
-    --accent: #60a5fa;
-}
-
-.feature-card-blue::before {
-    background: #60a5fa;
-}
-
-.feature-card-teal {
-    --accent: #2dd4bf;
-}
-
-.feature-card-teal::before {
-    background: #2dd4bf;
-}
-
-.feature-card-purple {
-    --accent: #a78bfa;
-}
-
-.feature-card-purple::before {
-    background: #a78bfa;
-}
-
-.feature-card-cyan {
-    --accent: #22d3ee;
-}
-
-.feature-card-cyan::before {
-    background: #22d3ee;
-}
-
-/* Headings */
-.feature-card h3 {
-    color: white;
-    margin-bottom: 8px;
-    font-size: 1.15rem;
-}
-
-/* Paragraph */
-.feature-card p {
-    color: #94a3b8;
-    margin-bottom: 0;
-    line-height: 1.5;
-}
-""", unsafe_allow_html=True)
+    }""", unsafe_allow_html=True)
 
 # LANDING PAGE
 def landing_page():
     print("Landing page")
+
+    render_navbar()
+    render_hero()
+    st.markdown("<div style='padding-top: 1rem'></div>", unsafe_allow_html=True)
+    render_features_tech()
     # HERO SECTION
-    hero_left, hero_right = st.columns([1.5, 1], gap="medium")
+    # hero_left, hero_right = st.columns([1.5, 1], gap="medium")
 
-    # Left side
-    with hero_left:
-        start = time.perf_counter()
-        # Heading
-        st.markdown("<h1 style='color:#f8fafc; margin-bottom: 0.25rem;'>Image Processing Studio</h1>", unsafe_allow_html=True)
-        # Description
-        st.markdown("<p style='color:#cbd5e1; font-size:1.2rem; margin-top:0; max-width:650px;'>Upload, edit and download images with fast one-click controls in a clean dark interface.</p>",
-                    unsafe_allow_html=True)
-        # st.markdown("<p style='color:#94a3b8; margin-top:1rem; max-width:650px;'>Rotate, flip, blur, sharpen and download your final image quickly with instant preview and responsive controls.</p>", unsafe_allow_html=True)
+    # # Left side
+    # with hero_left:
+    #     start = time.perf_counter()
+    #     # Heading
+    #     st.markdown("<h1 style='color:#f8fafc; margin-bottom: 0.25rem;'>Image Processing Studio</h1>", unsafe_allow_html=True)
+    #     # Description
+    #     st.markdown("<p style='color:#cbd5e1; font-size:1.2rem; margin-top:0; max-width:650px;'>Upload, edit and download images with fast one-click controls in a clean dark interface.</p>",
+    #                 unsafe_allow_html=True)
+    #     # st.markdown("<p style='color:#94a3b8; margin-top:1rem; max-width:650px;'>Rotate, flip, blur, sharpen and download your final image quickly with instant preview and responsive controls.</p>", unsafe_allow_html=True)
         
-        # File upload button
-        file_uploader_col, right = st.columns([3, 1])
-        with file_uploader_col:
-            uploaded_file = st.file_uploader("Upload your image", type=["jpg", "jpeg", "png", "bmp"])
-        print(f"Time for rendering hero_left: {time.perf_counter() - start}")
+    #     # File upload button
+    #     file_uploader_col, right = st.columns([3, 1])
+    #     with file_uploader_col:
+    #         uploaded_file = st.file_uploader("Upload your image", type=["jpg", "jpeg", "png", "bmp"])
+    #     print(f"Time for rendering hero_left: {time.perf_counter() - start}")
     
-    # Right side
-    with hero_right:
-        # start = time.perf_counter()
+    # # Right side
+    # with hero_right:
+    #     # start = time.perf_counter()
 
-        # Image
-        @st.cache_data
-        def load_image():
-            image = Image.open("images/deep-mind-compressed.webp").convert("RGB")
-            return image
+    #     # Image
+    #     @st.cache_data
+    #     def load_image():
+    #         image = Image.open("images/deep-mind-compressed.webp").convert("RGB")
+    #         return image
         
-        start = time.perf_counter()
-        hero_img = load_image()
-        print(f"Time for loading image: {time.perf_counter()-start}")
-        start = time.perf_counter()
-        st.image(hero_img, use_container_width=True)
-        print(f"Time for rendering image: {time.perf_counter()-start}")
-        # Description
-        st.markdown("<p style='text-align: center;'>Photo by <a href='https://unsplash.com/@googledeepmind' target='_blank'>Google DeepMind</a></p>",
-    unsafe_allow_html=True)
+    #     start = time.perf_counter()
+    #     hero_img = load_image()
+    #     print(f"Time for loading image: {time.perf_counter()-start}")
+    #     start = time.perf_counter()
+    #     st.image(hero_img, use_container_width=True)
+    #     print(f"Time for rendering image: {time.perf_counter()-start}")
+    #     # Description
+    #     st.markdown("<p style='text-align: center;'>Photo by <a href='https://unsplash.com/@googledeepmind' target='_blank'>Google DeepMind</a></p>",
+    # unsafe_allow_html=True)
         # print(f"Time for rendering hero_right: {time.perf_counter() - start}")
     
     start = time.perf_counter()
     # Feature cards
-    st.markdown("---")
-    card_1, card_2, card_3, card_4 = st.columns(4, gap="small")
-    with card_1:
-        st.markdown("<div class='feature-card feature-card-blue'><h3>⚡Fast Preview</h3><p>Apply filters instantly.</p></div>", unsafe_allow_html=True)
-    with card_2:
-        st.markdown("<div class='feature-card feature-card-teal'><h3>🔄 Rotate & Flip</h3><p>One-click orientation controls.</p></div>", unsafe_allow_html=True)
-    with card_3:
-        st.markdown("<div class='feature-card feature-card-purple'><h3>🎨 Filters</h3><p>Grayscale, binarize, sharpen, etc.</p></div>", unsafe_allow_html=True)
-    with card_4:
-        st.markdown("<div class='feature-card feature-card-cyan'><h3>⬇ Download</h3><p>Save your edited image as a PNG.</p></div>", unsafe_allow_html=True)
+    # st.markdown("---")
+    # card_1, card_2, card_3, card_4 = st.columns(4, gap="small")
+    # with card_1:
+    #     st.markdown("<div class='feature-card feature-card-blue'><h3>⚡Fast Preview</h3><p>Apply filters instantly.</p></div>", unsafe_allow_html=True)
+    # with card_2:
+    #     st.markdown("<div class='feature-card feature-card-teal'><h3>🔄 Rotate & Flip</h3><p>One-click orientation controls.</p></div>", unsafe_allow_html=True)
+    # with card_3:
+    #     st.markdown("<div class='feature-card feature-card-purple'><h3>🎨 Filters</h3><p>Grayscale, binarize, sharpen, etc.</p></div>", unsafe_allow_html=True)
+    # with card_4:
+    #     st.markdown("<div class='feature-card feature-card-cyan'><h3>⬇ Download</h3><p>Save your edited image as a PNG.</p></div>", unsafe_allow_html=True)
 
-    st.markdown("---")
-    print(f"Time for rendering feature_cards: {time.perf_counter() - start}")
+    # st.markdown("---")
+    # print(f"Time for rendering feature_cards: {time.perf_counter() - start}")
 
     # If file is uploaded
-    if uploaded_file is not None:
-        st.session_state["image"] = Actions.image_uploaded(uploaded_file, MAX_SIZE)
-        print(st.session_state["image_metadata"]["format"])
-        st.rerun()
+    # if uploaded_file is not None:
+    #     st.session_state["image"] = Actions.image_uploaded(uploaded_file, MAX_SIZE)
+    #     print(st.session_state["image_metadata"]["format"])
+    #     st.rerun()
 
 
 # EDITOR PAGE
@@ -194,11 +144,11 @@ def editor_page():
 
     # Original image
     with original:
-        st.markdown("<h3 style='text-align: center;'>Original</h3>", unsafe_allow_html=True)
+        st.markdown("<h3 style='text-align: center'>Original</h3>", unsafe_allow_html=True)
         st.image(Image.fromarray(st.session_state["ori_img"].img_arr), width=360)
     # Processed image
     with processed:
-        st.markdown("<h3 style='text-align: center;'>Processed</h3>", unsafe_allow_html=True)
+        st.markdown("<h3 style='text-align: center'>Processed</h3>", unsafe_allow_html=True)
         st.image(Image.fromarray(st.session_state["curr_img"].img_arr), width=360)
     st.markdown("---")
 
