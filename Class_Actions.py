@@ -5,7 +5,6 @@ from Class_ImgProcessing import ImageProcessing
 from typing import Literal, Optional
 from PIL import Image
 from io import BytesIO
-import pandas as pd
 
 # Data class for storing image operation history
 @dataclass
@@ -126,6 +125,7 @@ class Actions:
             "size": img_size
         }
 
+        st.session_state["page"] = "editor"
         image_arr = np.array(img)
         st.session_state["ori_img"] = ImageState("Original", image_arr)
         st.session_state["curr_img"] = ImageState("Original", image_arr)
@@ -224,4 +224,9 @@ class Actions:
                 file_name=f"{file_name}.{extension}",
                 key="download")
     
+    @staticmethod
+    @st.cache_data
+    def load_cached_image(img_path):
+        img = Image.open(img_path)
+        return img
     

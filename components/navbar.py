@@ -1,11 +1,6 @@
 import streamlit as st
-from utils.paths import LOGO
-
-# st.set_page_config(
-#     page_title="Image Processing Studio",
-#     page_icon="../icons/logo.png",
-#     initial_sidebar_state="collapsed",
-# )
+from utils.paths import LOGO_REMOVEBG
+from Class_Actions import Actions
 
 def render_navbar():
     st.markdown("""
@@ -15,13 +10,37 @@ def render_navbar():
                 .nav-title {
                 font-size: 18px;
                 font-family: "Intel One Mono", monospace;
-                color: white;
                 }
 
-                .nav-options {
+                .nav-option {
+                margin-top: 5px;
                 font-size: 18px;
                 font-family: "Inria Sans", sans-serif;
-                color: 'white';
+                transition: all 0.3s ease;
+                }
+
+                .nav-option:hover {
+                color: #04A7FF;
+                }
+
+                .nav-link {
+                text-decoration: none !important;
+                color: white !important;
+                }
+
+                .st-key-nav_home button {
+                background: transparent;
+                border: none;
+                }
+
+                .st-key-nav_home button p {
+                font-size: 18px;
+                font-family: "Inria Sans", sans-serif;
+                transition: all 0.3s ease;
+                }
+
+                .st-key-nav_home button p:hover {
+                color: #04A7FF;
                 }
                 </style>
                 """, unsafe_allow_html=True
@@ -29,22 +48,28 @@ def render_navbar():
     # Top padding
     # st.markdown("<div style='height: 20px'></div>", unsafe_allow_html=True)
 
-    left, spacer, right = st.columns([3, 4, 2], gap="medium")
+    left, spacer, right = st.columns([3, 4, 1.5], gap="medium")
 
     with left:
         logo, text = st.columns([1, 5], gap="small")
 
         with logo:
-            st.image(str(LOGO), use_container_width=True)
+            img = Actions.load_cached_image(str(LOGO_REMOVEBG))
+            st.image(img, use_container_width=True)
         with text:
             st.markdown("<div class='nav-title'>Image Processing Studio</div>", unsafe_allow_html=True)
 
     with right:
-        tech, github = st.columns(2, gap="small")
+        home, github = st.columns(2, gap="small")
 
-        with tech:
-            st.markdown("<div class='nav-options'>Tech Stack</div>", unsafe_allow_html=True)
+        with home:
+            if st.button("Home", key="nav_home"):
+                st.session_state.clear()
+                st.session_state["page"] = "home"
+                st.rerun()
         with github:
-            st.markdown("<div class='nav-options'>GitHub</div>", unsafe_allow_html=True)
+            st.markdown("""<a href='https://github.com/ab23ms233/Image-Processing-using-Numpy' target='_blank' class="nav-link">
+                                <div class='nav-option'>GitHub</div>
+                        </a>""", unsafe_allow_html=True)
 
     
