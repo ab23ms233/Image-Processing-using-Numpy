@@ -1,20 +1,18 @@
 import streamlit as st
-from Class_Actions import Actions
 
-def render_hero(max_img_size):
+def render_hero():
     st.markdown("""
-<style>
-@import url('https://fonts.googleapis.com/css2?family=Inria+Sans:ital,wght@0,300;0,400;0,700;1,300;1,400;1,700&family=Inria+Serif:ital,wght@0,300;0,400;0,700;1,300;1,400;1,700&family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap');
-                
+            <style>
+
                 .headline {
-                font-size: 60px;
+                font-size: 4rem;
                 color: white;
                 font-family: "Inria Serif", serif;
                 line-height: 5rem;
                 }
                 
                 .sub-header {
-                font-size: 20px;
+                font-size: 1.2rem;
                 font-family: "Inria Sans", sans-serif;
                 color: white;
                 }
@@ -22,27 +20,22 @@ def render_hero(max_img_size):
                 .st-key-upload_image button {
                 width: 10rem;
                 height: 3.3rem;
-                background: #04A7FF;
+                background: #FF2727; 
                 border-radius: 16px;
                 padding: 20px;
                 transition: all 0.3s ease;
                 }
 
                 .st-key-upload_image button:hover {
-                background: #020617;
-                color: #04A7FF;
-                border: 2px solid #04A7FF;
+                background: transparent;
                 }
 
                 .st-key-upload_image button:focus {
-                background: #020617 !important;
-                color: #04A7FF !important;
-                border: 2px solid #04A7FF !important;
+                background: transparent !important;
                 }
 
                 .st-key-upload_image button p {
                 font-weight: 600;
-                font-family: "Inter", sans-serif;
                 font-size: 1rem;
                 }
             </style>""", unsafe_allow_html=True)
@@ -68,9 +61,6 @@ def render_hero(max_img_size):
         if st.session_state["upload_clicked"]:
             uploaded_file = st.file_uploader("Upload Image", type=["jpg", "jpeg", "png", "bmp"], label_visibility="collapsed")
 
-        # If file is uploaded
-        if uploaded_file is not None:
-            st.session_state["image"] = Actions.image_uploaded(uploaded_file, max_img_size)
-            st.rerun()
+        return uploaded_file
         
 

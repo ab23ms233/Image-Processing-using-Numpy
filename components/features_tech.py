@@ -34,25 +34,21 @@ def tech_cards(name, icon_path, link):
 def render_features_tech():
     st.markdown("""
                 <style>
-@import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@300..700&family=Inria+Sans:ital,wght@0,300;0,400;0,700;1,300;1,400;1,700&display=swap');
 
                 .headers {
                 font-size: 1.5rem;
                 font-family: "Inria Sans", sans-serif;
-                color: white;
                 }
                 
                 .options {
                 font-size: 1.2rem;
                 font-family: "Fira Code", monospace;
-                color: white;
                 text-align: center;
                 }
                 
                 .text {
                 font-family: "Inria Sans", sans-serif;
                 font-size: 1rem;
-                color: white
                 }
                 
                 .feature-cards {
@@ -60,7 +56,7 @@ def render_features_tech():
                 height: 9rem;
                 background-color: #0F1720;
                 border-radius: 16px;
-                border: 2px solid #466485;
+                border: 2px solid rgba(255, 75, 75, 0.2);
                 padding: 20px;
                 transition: all 0.3s ease;
                 }
@@ -72,7 +68,7 @@ def render_features_tech():
 
                 .feature-cards:hover {
                 transform: translateY(-4px);
-                box-shadow: 5px 5px #466485;
+                box-shadow: 5px 5px rgba(255, 75, 75, 0.2);
                 }
                 
                 .tech-card {
@@ -106,6 +102,7 @@ def render_features_tech():
                 .tech-card-link {
                 text-decoration: none !important;
                 }
+                </style>
                 """, unsafe_allow_html=True)
     
     st.markdown("<div class='headers'>Features</div>", unsafe_allow_html=True)

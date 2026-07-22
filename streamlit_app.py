@@ -46,6 +46,12 @@ st.markdown(
         color: #e2e8f0;
     }""", unsafe_allow_html=True)
 
+# Page fonts
+st.markdown("""
+            <style>
+                @import url('https://fonts.googleapis.com/css2?family=Inria+Sans:ital,wght@0,300;0,400;0,700;1,300;1,400;1,700&family=Fira+Code:wght@300..700&family=Inria+Serif:ital,wght@0,300;0,400;0,700;1,300;1,400;1,700&family=Intel+One+Mono:ital,wght@0,300..700;1,300..700&display=swap');
+            </style>""", unsafe_allow_html=True)
+
 if "page" not in st.session_state:
     st.session_state["page"] = "home"
 

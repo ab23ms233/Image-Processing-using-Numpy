@@ -1,15 +1,17 @@
 import streamlit as st
+from Class_Actions import Actions
+
 from components.navbar import render_navbar
 from components.hero import render_hero
 from components.features_tech import render_features_tech
 
 # LANDING PAGE
-def home_page(max_imag_size):
+def home_page(max_img_size):
     # Navigation menu
     render_navbar()
 
     # Hero section
-    render_hero(max_imag_size)
+    uploaded_file = render_hero()
 
     # Padding and divider
     st.markdown("<div style='padding-top: 1rem'></div>", unsafe_allow_html=True)
@@ -18,6 +20,10 @@ def home_page(max_imag_size):
     # Features and tech section
     render_features_tech()
     
+    # If file is uploaded
+    if uploaded_file is not None:
+        st.session_state["image"] = Actions.image_uploaded(uploaded_file, max_img_size)
+        st.rerun()
     # # Right side
     # with hero_right:
     #     # start = time.perf_counter()
