@@ -1,6 +1,5 @@
 import streamlit as st
 import time
-# from PIL import Image
 
 from app_pages.home import home_page
 from app_pages.editor import editor_page
@@ -30,7 +29,7 @@ st.markdown("""
     }
             
     .block-container {
-            padding-top: 0.5rem;
+            padding-top: 0;
             padding-right: 5rem;
             padding-left: 5rem;
             }
@@ -58,6 +57,6 @@ if "page" not in st.session_state:
 if st.session_state["page"] == "editor":
     editor_page(MAX_SIZE)
 elif st.session_state["page"] == "home":
-    start = time.perf_counter()
+    # start = time.perf_counter()
     home_page(MAX_SIZE)
-    print(f"Time for rendering homepage: {time.perf_counter()-start}")
+    # print(f"Time for rendering homepage: {time.perf_counter()-start}")

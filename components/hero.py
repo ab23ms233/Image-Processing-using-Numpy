@@ -1,6 +1,9 @@
 import streamlit as st
+from typing import Any
+from streamlit_image_comparison import image_comparison
+from utils.paths import COVER_EDITED, COVER_ORIGINAL
 
-def render_hero():
+def render_hero() -> Any | None:
     st.markdown("""
             <style>
 
@@ -40,9 +43,11 @@ def render_hero():
                 }
             </style>""", unsafe_allow_html=True)
     
+    # Initially, no file is uploaded, hence uploaded_file is set to None. 
     uploaded_file = None
-    left, right = st.columns([1.5, 1], gap="small")
+    left, right = st.columns(2, gap="small")
 
+    # Headline, subheader and upload button
     with left:
         st.markdown("<div style='padding-top: 5rem'></div>", unsafe_allow_html=True)
         st.markdown("<div class=headline> Image Processing<br>made easy.</div>", unsafe_allow_html=True)
@@ -52,15 +57,25 @@ def render_hero():
 
         st.markdown("<div style='padding-top: 3rem'></div>", unsafe_allow_html=True)
 
+        # Initialise state for detecting if upload button is clicked
         if "upload_clicked" not in st.session_state:
             st.session_state["upload_clicked"] = False
-
+        # Upload button. "upload_clicked" checks if upload button is clicked 
         if st.button("Upload Image", key="upload_image"):
             st.session_state["upload_clicked"] = True
-
+        # Render file uploader if upload button is clicked
         if st.session_state["upload_clicked"]:
             uploaded_file = st.file_uploader("Upload Image", type=["jpg", "jpeg", "png", "bmp"], label_visibility="collapsed")
 
+    # with right:
+    #     image_comparison(
+    #         img1=str(COVER_ORIGINAL),
+    #         img2=str(COVER_EDITED),
+    #         label1="Original",
+    #         label2="Edited",
+    #         width=900
+    #     )
+        # Return the uploaded file if it exists, else return None
         return uploaded_file
         
 

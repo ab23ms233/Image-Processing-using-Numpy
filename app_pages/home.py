@@ -1,3 +1,19 @@
+"""
+## Purpose
+    Renders the homepage of the website.
+
+## Responsibilities
+- Displays the navigation bar, hero section, features, and tech stack.
+- Handles image upload and navigation to the editor page.
+
+## Dependencies
+- streamlit: For rendering the web interface.
+- Class_Actions: For handling image upload operations.
+- components.navbar: For rendering the navigation bar.
+- components.hero: For rendering the hero section.
+- components.features_tech: For rendering the features and tech stack section.
+"""
+
 import streamlit as st
 from Class_Actions import Actions
 
@@ -11,6 +27,7 @@ def home_page(max_img_size):
     render_navbar()
 
     # Hero section
+    # Returns the uploaded file if any, else returns None
     uploaded_file = render_hero()
 
     # Padding and divider
@@ -22,27 +39,5 @@ def home_page(max_img_size):
     
     # If file is uploaded
     if uploaded_file is not None:
-        st.session_state["image"] = Actions.image_uploaded(uploaded_file, max_img_size)
+        Actions.image_uploaded(uploaded_file, max_img_size)
         st.rerun()
-    # # Right side
-    # with hero_right:
-    #     # start = time.perf_counter()
-
-    #     # Image
-    #     @st.cache_data
-    #     def load_image():
-    #         image = Image.open("images/deep-mind-compressed.webp").convert("RGB")
-    #         return image
-        
-    #     start = time.perf_counter()
-    #     hero_img = load_image()
-    #     print(f"Time for loading image: {time.perf_counter()-start}")
-    #     start = time.perf_counter()
-    #     st.image(hero_img, use_container_width=True)
-    #     print(f"Time for rendering image: {time.perf_counter()-start}")
-    #     # Description
-    #     st.markdown("<p style='text-align: center;'>Photo by <a href='https://unsplash.com/@googledeepmind' target='_blank'>Google DeepMind</a></p>",
-    # unsafe_allow_html=True)
-        # print(f"Time for rendering hero_right: {time.perf_counter() - start}")
-    
-    

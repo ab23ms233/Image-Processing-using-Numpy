@@ -1,16 +1,38 @@
+"""
+## Purpose:
+    Renders the features and tech stack section of the HOMEPAGE.
+
+## Responsibilities:
+- Displays feature cards describing the app capabilities.
+- Shows technology cards for the libraries used in the project.
+
+## Functions used:
+- encode_icon: Encodes an icon image to base64 for embedding in HTML.
+- feature_card: Renders a feature card with heading, text, and accent color.
+- tech_cards: Renders a tech card with name, icon, and link.
+
+## Dependencies:
+- streamlit: For rendering the web interface.
+- utils.paths: For accessing paths to tech stack icons.
+- base64: For converting local images/icons to encoded files for embedding in HTML
+"""
+
 import streamlit as st
 from utils.paths import PYTHON, NUMPY, PILLOW, SCIPY, STREAMLIT
 from pathlib import Path
 import base64
+from typing import Union
 
-def encode_icon(icon_path: Path) -> str:
+# Function for encoding the icon image of tech stack to base64 for embedding in HTML
+def encode_icon(icon_path: Union[str, Path]) -> str:
     icon_path = Path(icon_path)
     suffix = icon_path.suffix.lower()
     mime_type = "image/svg+xml" if suffix == ".svg" else f"image/{suffix[1:]}"
     encoded_bytes = base64.b64encode(icon_path.read_bytes())
     return f"data:{mime_type};base64,{encoded_bytes.decode('ascii')}"
 
-def feature_card(heading, text, accent):
+# Function to render a feature card with a heading, text, and color
+def feature_card(heading: str, text: str, accent: str):
     st.markdown(f"""
                 <div class='feature-cards' style='border-left: 5px solid {accent};'>
                     <div class='options'>{heading}</div>
@@ -18,8 +40,8 @@ def feature_card(heading, text, accent):
                     <div class='text'>{text}</div>
                 </div>""", unsafe_allow_html=True)
 
-
-def tech_cards(name, icon_path, link):
+# Function to render a tech card with a name, icon, and link
+def tech_cards(name: str, icon_path: Union[str, Path], link: str):
     icon_src = encode_icon(icon_path)
     st.markdown(f"""
                 <a href="{link}" target="_blank" class="tech-card-link">
@@ -105,9 +127,11 @@ def render_features_tech():
                 </style>
                 """, unsafe_allow_html=True)
     
+    # FEATURES header
     st.markdown("<div class='headers'>Features</div>", unsafe_allow_html=True)
     st.markdown("<div style='padding-top: 2rem'></div>", unsafe_allow_html=True)
 
+    # FEATURE cards
     card1, card2, card3, card4 = st.columns(4, gap="small")
     with card1:
         feature_card("Transform", "Rotate and flip.", "#9F8A6F")
@@ -119,9 +143,12 @@ def render_features_tech():
         feature_card("Export", "Compress and convert to your desired format.", "#D67FD8")
 
     st.markdown("<div style='margin-top: 5rem;'></div>", unsafe_allow_html=True)
+
+    # TECH STACK header
     st.markdown("<div class='headers'>Tech Stack</div>", unsafe_allow_html=True)
     st.markdown("<div style='padding-top: 2rem'></div>", unsafe_allow_html=True)
-
+    
+    # TECH STACK cards
     tech1, tech2, tech3, tech4, tech5 = st.columns(5, gap="medium")
     with tech1:
         tech_cards("Python", str(PYTHON), link="https://www.python.org/")

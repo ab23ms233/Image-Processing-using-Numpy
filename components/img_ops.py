@@ -1,3 +1,19 @@
+"""
+Purpose:
+    Renders the original and preview images and image editing controls.
+
+Responsibilities:
+- Displays image editing controls.
+- Connects UI actions to the backend image processing logic.
+- Displays the original and processed images side by side.
+- Displays operations like undo, redo, reset, and export.
+- Displays history of operations.
+
+Dependencies:
+- streamlit: For rendering the web interface.
+- Class_Actions: For handling image processing operations and state management.
+"""
+
 import time
 import streamlit as st
 from Class_Actions import Actions
@@ -36,17 +52,15 @@ def render_img_ops(tabs):
                 border-color: rgb(255, 75, 75);
                 background: transparent;
                 color: rgb(255, 75, 75);
-                transition: all 0.3s ease;
                 }
 
                 .st-key-reset button:hover {
-                background: rgba(255, 75, 75, 0.2);
+                background: rgba(255, 75, 75, 0.05);
                 }
 
                 .st-key-export button {
                 background: #FF2727;
                 color: white;
-                transition: all 0.3s ease;
                 }
 
                 .st-key-export button:hover {
@@ -66,13 +80,14 @@ def render_img_ops(tabs):
     
     # Editor pane
     with editor_pane:
-        start = time.perf_counter()
+        # start = time.perf_counter()
         # Different tabs for image processing tools
         selected_tab = st.segmented_control("Category", tabs, label_visibility="collapsed", default="Transform")
 
         # TRANSFORM TAB
         if selected_tab == "Transform":
             st.subheader("Transform")
+            # Initialising container for CSS styling of buttons
             transform_container = st.container(key="transform_container")
 
             with transform_container:
@@ -88,6 +103,7 @@ def render_img_ops(tabs):
         # FILTERS TAB
         if selected_tab == "Filters":
             st.subheader("Filters")
+            # Initialising container for CSS styling of buttons
             filters_container = st.container(key="filters_container")
 
             with filters_container:
@@ -107,6 +123,7 @@ def render_img_ops(tabs):
         # COLORS
         if selected_tab == "Colors":
             st.subheader("Colors")
+            # Initialising container for CSS styling of buttons
             colors_container = st.container(key="colors_container")
 
             with colors_container:
@@ -125,8 +142,7 @@ def render_img_ops(tabs):
         Actions.tool_renderer(selected_tab)
         st.markdown("-----")
 
-        # Displaying HISTORY
-        Actions.display_history()
+        # Other operations: Undo, Redo, Reset, Export
         other_ops_container = st.container(key="other_ops_container")
         with other_ops_container:
             undo_col, redo_col, reset_col, export_col = st.columns([1, 1, 1.5, 1], gap="small")
@@ -139,20 +155,21 @@ def render_img_ops(tabs):
             with redo_col:
                 if st.button("↪ Redo", use_container_width=True, key="redo"):
                     Actions.redo()
-
             # Reset to original
             with reset_col:
                 if st.button("Reset to Original", use_container_width=True, key="reset"):
                     Actions.reset()
-
             # Export image
             with export_col:
+                # If export button is clicked, export_mode is set to True, which will render the export settings in the editor page
                 if st.button("Export", key="export", use_container_width=True):
                     st.session_state["export_mode"] = True
         
-        print(f"Time for rendering tabs: {time.perf_counter()-start}")
+        # Displaying HISTORY
+        Actions.display_history()
+        # print(f"Time for rendering tabs: {time.perf_counter()-start}")
 
-    start = time.perf_counter()
+    # start = time.perf_counter()
     # Original image
     with original:
         st.markdown("<h3 style='text-align: center'>Original</h3>", unsafe_allow_html=True)
@@ -164,6 +181,6 @@ def render_img_ops(tabs):
         st.image(st.session_state["curr_preview"], width=360)
         # st.image(Image.fromarray(st.session_state["curr_img"].img_arr), width=360)
 
-    print(f"Time for displaying editor images: {time.perf_counter() - start}")
+    # print(f"Time for displaying editor images: {time.perf_counter() - start}")
 
         

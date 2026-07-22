@@ -1,3 +1,18 @@
+"""
+Purpose:
+    Renders the navigation bar of the website.
+
+Responsibilities:
+- Displays the logo and title of the app.
+- Provides a home button to navigate back to the homepage.
+- Provides a link to the GitHub repository of the project.
+
+Dependencies:
+- streamlit: For rendering the web interface.
+- utils.paths: For accessing path to the logo image.
+- Actions: For caching and rendering logo for faster preview
+"""
+
 import streamlit as st
 from utils.paths import LOGO_REMOVEBG
 from Class_Actions import Actions
@@ -39,20 +54,20 @@ def render_navbar():
                 }
                 </style>
                 """, unsafe_allow_html=True)
-    # Top padding
-    # st.markdown("<div style='height: 20px'></div>", unsafe_allow_html=True)
 
     left, spacer, right = st.columns([3, 4, 2], gap="medium")
 
+    # Logo and text
     with left:
         logo, text = st.columns([1, 5], gap="small")
-
+    
         with logo:
             img = Actions.load_cached_image(str(LOGO_REMOVEBG))
             st.image(img, use_container_width=True)
         with text:
             st.markdown("<div class='nav-title'>Image Processing Studio</div>", unsafe_allow_html=True)
 
+    # Home button and GitHub link 
     with right:
         home, github = st.columns([1, 1.5], gap="medium")
 

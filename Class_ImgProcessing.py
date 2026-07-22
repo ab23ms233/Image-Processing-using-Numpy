@@ -1,5 +1,3 @@
-from math import e
-
 import numpy as np
 from numpy import ndarray
 import matplotlib.pyplot as plt
@@ -13,11 +11,11 @@ class ImageProcessing:
     This class provides methods for displaying, cropping, rotating, flipping, converting to grayscale,
     binarizing, convolving, blurring, sharpening, and generating images.
 
-    ## Instance Attributes:
+    ## Instance Attributes
         **arr**: *(ndarray)*
         The image data as a NumPy array.
 
-    ## Class Attributes:
+    ## Class Attributes
         **sharpen_kernel**: *(ndarray)*
         Kernel for sharpening the image.
         
@@ -33,26 +31,26 @@ class ImageProcessing:
         **gray_convert_arr**: *(ndarray)*
         Array for converting RGB to grayscale using the standard luminance formula.
 
-    ## Methods:
-        **image**: Displays the image stored in the instance.
-        **display_img**: Displays an image with an optional text label.
-        **compare_img**: Compares multiple images side by side.
-        **crop_img**: Crops the image according to the provided coordinates.
-        **rotate_img**: Rotates the image by 90 degrees clockwise or counterclockwise.
-        **flip_img**: Flips the image horizontally or vertically.
-        **is_rgb**: Checks if the image is in RGB format.
-        **negative**: Converts the image to its negative.
-        **grayscale**: Converts the image to grayscale.
-        **binarise**: Converts the image to binary using a specified threshold.
-        **convolve2d**: Applies a 2D convolution to an image array using a specified kernel.
-        **convolve3d**: Applies a 3D convolution to an image array using a specified kernel.
-        **convolve3d_scipy**: Applies a 3D convolution using SciPy.
-        **blur_img**: Applies a blur to the image using a specified kernel.
-        **sharpen_img**: Applies a sharpening filter to the image using a specified kernel.
-        **edge_detection**: Applies edge detection to the image using specified kernels.
-        **generate_image**: Generates a random square striped image with specified divisions and merging sections.
+    ## Methods
+    - **image**: Displays the image stored in the instance.
+    - **display_img**: Displays an image with an optional text label.
+    - **compare_img**: Compares multiple images side by side.
+    - **crop_img**: Crops the image according to the provided coordinates.
+    - **rotate_img**: Rotates the image by 90 degrees clockwise or counterclockwise.
+    - **flip_img**: Flips the image horizontally or vertically.
+    - **is_rgb**: Checks if the image is in RGB format.
+    - **negative**: Converts the image to its negative.
+    - **grayscale**: Converts the image to grayscale.
+    - **binarise**: Converts the image to binary using a specified threshold.
+    - **convolve2d**: Applies a 2D convolution to an image array using a specified kernel.
+    - **convolve3d**: Applies a 3D convolution to an image array using a specified kernel.
+    - **convolve3d_scipy**: Applies a 3D convolution using SciPy.
+    - **blur_img**: Applies a blur to the image using a specified kernel.
+    - **sharpen_img**: Applies a sharpening filter to the image using a specified kernel.
+    - **edge_detection**: Applies edge detection to the image using specified kernels.
+    - **generate_image**: Generates a random square striped image with specified divisions and merging sections.
 
-    Raises:
+    ## Raises
         TypeError: If the image_array is not a NumPy ndarray.
         ValueError: If the image_array does not have the correct dimensions (2D or 3D).
     """
